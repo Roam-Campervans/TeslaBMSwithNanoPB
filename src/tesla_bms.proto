@@ -1,0 +1,27 @@
+syntax = "proto2";
+
+package TeslaBMS;
+
+message Pack {
+  required int32 id = 1;
+  optional string packName = 2;  
+  required int32 numberOfModules = 3;
+  required int32 currentVoltage = 4;
+  required int32 averagePacktemp = 5;
+  repeated Module modules = 6;
+
+  message Module {
+    required string id = 1;
+    required float moduleVoltage = 2;
+    required float moduleTemp = 3;
+    required float lowestCellVolt = 4;
+    required float highestCellVolt = 5;
+    repeated Cell cells = 6;
+
+    message Cell{
+        required int32 cellId = 1;
+        required float cellVolt = 2;
+        required string balanceState = 3;
+    }
+  }
+}

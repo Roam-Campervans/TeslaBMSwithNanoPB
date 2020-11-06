@@ -1,0 +1,5 @@
+Will not apply HSTS. The HSTS database must be a regular and non-world-writable file.
+ERROR: could not open HSTS store at '/home/crackpirate/.wget-hsts'. HSTS will be disabled.
+--2020-07-05 14:27:43--  https://update.code.visualstudio.com/commit:cd9ea6488829f560dc949a8b2fb789f3cdc05f5d/server-linux-x64/stable
+Resolving update.code.visualstudio.com (update.code.visualstudio.com)... failed: Temporary failure in name resolution.
+wget: unable to resolve host address ‘update.code.visualstudio.com’
