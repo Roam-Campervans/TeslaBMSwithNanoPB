@@ -9,10 +9,4 @@
 PB_BIND(TeslaBMS_Pack, TeslaBMS_Pack, AUTO)
 
 
-PB_BIND(TeslaBMS_Pack_Module, TeslaBMS_Pack_Module, AUTO)
-
-
-PB_BIND(TeslaBMS_Pack_Module_Cell, TeslaBMS_Pack_Module_Cell, AUTO)
-
-
 
