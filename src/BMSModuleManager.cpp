@@ -579,3 +579,6 @@ void BMSModuleManager::setBatteryID()
     Can0.setRXFilter(0, canID, 0x1FFF0000ul, true);
 }
 
+int BMSModuleManager::getNumOfModules(){
+    return numFoundModules;
+}

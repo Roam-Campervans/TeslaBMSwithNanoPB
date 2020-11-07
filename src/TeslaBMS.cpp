@@ -126,20 +126,30 @@ void setup()
 
 // ahrenswett  
 void pbs(){
-    // set pack data
-    pb_ostream_t stream;
+
     uint8_t buffer [128];
     bool status;
-
-    TeslaBMS_Pack mypack ={};
-    // TODO: needs to be a hash of the user inputed name 
-    mypack.id = 1;
-    mypack.averagePacktemp = averagePackTemp;
-    mypack.currentVoltage = currVoltage;
-    mypack.numberOfModules = BMSModuleManager::numFoundModules;
-    
-    for (int i=0)
+    { /*Encode the message*/
+        
+        /* Allocate space on the stack to store the message data.
+         *
+         * Nanopb generates simple struct definitions for all the messages.
+         * - check out the contents of simple.pb.h!
+         * It is a good idea to always initialize your structures
+         * so that you do not have garbage data from RAM in there.
+         */
+        TeslaBMS_Pack mypack = TeslaBMS_Pack_init_zero;
+        // stream to write buffer
+        pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+        
+        // TODO: needs to be a hash of the user inputed name 
+        mypack.id = 1;
+        mypack.averagePacktemp = bms.getAvgTemperature();
+        mypack.currentVoltage = bms.getPackVoltage();
+        mypack.numberOfModules = (int32_t)BMSModuleManager::getNumOfModules;
+    }
 }
+
 
 
 void loop()
