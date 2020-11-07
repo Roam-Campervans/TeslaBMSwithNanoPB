@@ -6,7 +6,7 @@
 
 extern EEPROMSettings settings;
 
-//THis is where I belive I may need to add a message builder. 
+//This is where I belive I may need to add a message builder. 
 BMSModule::BMSModule()
 {
     //sets up the cells in the module

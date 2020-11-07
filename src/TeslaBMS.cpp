@@ -113,6 +113,8 @@ void setup()
 
     systemIO.setup();
 
+// look for stored data about pack in sdcard if none prompt user for pack name
+
     bms.renumberBoardIDs();
 
     //Logger::setLoglevel(Logger::Debug);
@@ -129,12 +131,16 @@ void pbs(){
     uint8_t buffer [128];
     bool status;
 
-    _TeslaBMS_Pack  mypack = TeslaBMS_Pack_init_zero;
-
-    stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-
+    TeslaBMS_Pack mypack ={};
+    // TODO: needs to be a hash of the user inputed name 
+    mypack.id = 1;
+    mypack.averagePacktemp = averagePackTemp;
+    mypack.currentVoltage = currVoltage;
+    mypack.numberOfModules = BMSModuleManager::numFoundModules;
     
+    for (int i=0)
 }
+
 
 void loop()
 {
