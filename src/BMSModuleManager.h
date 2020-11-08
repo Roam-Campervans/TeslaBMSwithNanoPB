@@ -23,7 +23,8 @@ public:
     void processCANMsg(CAN_FRAME &frame);
     void printPackSummary();
     void printPackDetails();
-    static int getNumOfModules();
+    /* TODO: figure out how to pass the number of modules to protobuf message
+    static int32_t getNumOfModules(int holder);*/
 
 protected:
     float packVolt;                         // All modules added together
@@ -32,7 +33,7 @@ protected:
     float lowestPackTemp;
     float highestPackTemp;
     BMSModule modules[MAX_MODULE_ADDR + 1]; // store data for as many modules as we've configured for.
-    static int numFoundModules;                    // The number of modules that seem to exist
+    int numFoundModules;                    // The number of modules that seem to exist
     bool isFaulted;
     
     void sendBatterySummary();

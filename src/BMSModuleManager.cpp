@@ -94,7 +94,7 @@ void BMSModuleManager::findBoards()
     uint8_t buff[8];
 
     numFoundModules = 0;
-    payload[0] = 0;
+    payload[0] = 0; 
     payload[1] = 0; //read registers starting at 0
     payload[2] = 1; //read one byte
     for (int x = 1; x <= MAX_MODULE_ADDR; x++)
@@ -579,6 +579,6 @@ void BMSModuleManager::setBatteryID()
     Can0.setRXFilter(0, canID, 0x1FFF0000ul, true);
 }
 
-int BMSModuleManager::getNumOfModules(){
-    return numFoundModules;
-}
+// int32_t BMSModuleManager::getNumOfModules(int holder){
+//     holder = (int)numFoundModules;
+// }

@@ -17,9 +17,9 @@
 #include "pb_common.c"
 #include "tesla_bms.pb.h"
 
-//#define BMS_BAUD  612500
-#define BMS_BAUD  617647
-//#define BMS_BAUD  608695
+// #define BMS_BAUD  612500
+#define BMS_BAUD  617647  
+// #define BMS_BAUD  608695
 
 BMSModuleManager bms;
 EEPROMSettings settings;
@@ -148,7 +148,7 @@ void pbs(){
         mypack.id = 1;
         mypack.averagePacktemp = bms.getAvgTemperature();
         mypack.currentVoltage = bms.getPackVoltage();
-        mypack.numberOfModules = (int32_t)BMSModuleManager::getNumOfModules;
+        // mypack.numberOfModules = (int32_t) BMSModuleManager::getNumOfModules;
     
         //encode
         status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack);
@@ -158,7 +158,6 @@ void pbs(){
          if (!status)
         {
             printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
-            return 1;
         }
     }
 
@@ -181,9 +180,10 @@ void pbs(){
         
         /* Print the data contained in the message. */
         printf("********MESSAGE FROM NANOPB!*********");
-        printf("Number Of Modules in Pack: ", myPack.numberOfModules);
+        // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
         printf("Pack Voltage: ", (int)myPack.currentVoltage);
         printf("Average Temp: ", myPack.averagePacktemp);
+        printf("********MESSAGE FROM NANOPB!*********");
     }
     
     
