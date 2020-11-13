@@ -94,8 +94,7 @@ void initializeCAN()
 }
 
 // ahrenswett  
-void pbs(){
-
+void pbs(float avgTemp, float packVoltage){
     uint8_t buffer [128];
     size_t message_length;
     bool status;
@@ -111,22 +110,21 @@ void pbs(){
          */
         TeslaBMS_Pack mypack = TeslaBMS_Pack_init_zero;
         // stream to write buffer
-        pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+        pb_ostream_t istream = pb_ostream_from_buffer(buffer, sizeof(buffer));
         
-        // TODO: needs to be a hash of the user inputed name 
-        mypack.id = 1;
-        mypack.averagePacktemp = bms.getAvgTemperature();
-        mypack.currentVoltage = bms.getPackVoltage();
+        // TODO: needs to be a hash of the user inputed name for pack name and id needs to be set based on module ID
+        mypack.averagePacktemp = avgTemp;
+        mypack.currentVoltage = packVoltage;
         // mypack.numberOfModules = (int32_t) BMSModuleManager::getNumOfModules;
     
         //encode
-        status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack);
+        status = pb_encode(&istream, TeslaBMS_Pack_fields, &mypack);
         
 
                 /* Then just check for any errors.. */
          if (!status)
         {
-            printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+            printf("Encoding failed: %s\n", PB_GET_ERROR(&istream));
         }
     }
 
@@ -135,24 +133,26 @@ void pbs(){
         TeslaBMS_Pack myPack = TeslaBMS_Pack_init_zero;
         
         /* Create a stream that reads from the buffer. */
-        pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
+        pb_istream_t ostream = pb_istream_from_buffer(buffer, message_length);
         
         /* Now we are ready to decode the message. */
-        status = pb_decode(&stream, TeslaBMS_Pack_fields, &myPack);
+        status = pb_decode(&ostream, TeslaBMS_Pack_fields, &myPack);
         
         /* Check for errors... */
         if (!status)
         {
-            printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));
+            printf("Decoding failed: %s\n", PB_GET_ERROR(&ostream));
         
         }
         
         /* Print the data contained in the message. */
         printf("********MESSAGE FROM NANOPB!*********");
         // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
-        printf("Pack Voltage: ", (int)myPack.currentVoltage);
-        printf("Average Temp: ", myPack.averagePacktemp);
-        printf("********MESSAGE FROM NANOPB!*********");
+        printf("\nPack Voltage: ");
+        printf("%.3lf \n",myPack.currentVoltage);
+        printf("\nAverage Temp: ");
+        printf("%.3lf \n",myPack.averagePacktemp);
+        printf("\n********MESSAGE FROM NANOPB!*********" );
     }
 }
 
@@ -199,7 +199,7 @@ void loop()
         lastUpdate = millis();
         bms.balanceCells();
         bms.getAllVoltTemp();
-        pbs();
+        pbs(bms.getPackVoltage(), bms.getAvgTemperature());
     }
 
     if (Can0.available()) {

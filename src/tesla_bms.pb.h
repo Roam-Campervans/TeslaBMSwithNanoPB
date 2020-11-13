@@ -11,9 +11,12 @@
 
 /* Struct definitions */
 typedef struct _TeslaBMS_Pack {
+    bool has_id;
     int32_t id;
     pb_callback_t packName;
+    bool has_currentVoltage;
     float currentVoltage;
+    bool has_averagePacktemp;
     float averagePacktemp;
 } TeslaBMS_Pack;
 
@@ -23,8 +26,8 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
-#define TeslaBMS_Pack_init_default               {0, {{NULL}, NULL}, 0, 0}
-#define TeslaBMS_Pack_init_zero                  {0, {{NULL}, NULL}, 0, 0}
+#define TeslaBMS_Pack_init_default               {false, 0, {{NULL}, NULL}, false, 0, false, 0}
+#define TeslaBMS_Pack_init_zero                  {false, 0, {{NULL}, NULL}, false, 0, false, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define TeslaBMS_Pack_id_tag                     1
@@ -34,10 +37,10 @@ extern "C" {
 
 /* Struct field encoding specification for nanopb */
 #define TeslaBMS_Pack_FIELDLIST(X, a) \
-X(a, STATIC,   REQUIRED, INT32,    id,                1) \
+X(a, STATIC,   OPTIONAL, INT32,    id,                1) \
 X(a, CALLBACK, OPTIONAL, STRING,   packName,          2) \
-X(a, STATIC,   REQUIRED, FLOAT,    currentVoltage,    4) \
-X(a, STATIC,   REQUIRED, FLOAT,    averagePacktemp,   5)
+X(a, STATIC,   OPTIONAL, FLOAT,    currentVoltage,    4) \
+X(a, STATIC,   OPTIONAL, FLOAT,    averagePacktemp,   5)
 #define TeslaBMS_Pack_CALLBACK pb_default_field_callback
 #define TeslaBMS_Pack_DEFAULT NULL
 
