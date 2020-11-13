@@ -1,7 +1,7 @@
-
 #if defined (__arm__) && defined (__SAM3X8E__)
 #include <chip.h>
 #endif
+
 #include <Arduino.h>
 #include "Logger.h"
 #include "SerialConsole.h"
@@ -9,7 +9,6 @@
 #include "SystemIO.h"
 #include <due_can.h>
 #include <due_wire.h>
-// #include <Wire.h>
 #include <Wire_EEPROM.h>
 //Nanopb dependacies
 #include  "pb_encode.c"
@@ -18,8 +17,8 @@
 #include "tesla_bms.pb.h"
 
 // #define BMS_BAUD  612500
-#define BMS_BAUD  617647  
-// #define BMS_BAUD  608695
+#define BMS_BAUD  617647
+//#define BMS_BAUD  608695
 
 BMSModuleManager bms;
 EEPROMSettings settings;
@@ -75,7 +74,7 @@ void loadSettings()
     else {
         Logger::console("Using stored values from EEPROM");
     }
-       
+        
     Logger::setLoglevel((Logger::LogLevel)settings.logLevel);
 }
 
@@ -92,36 +91,6 @@ void initializeCAN()
         id = (0xBAul << 20) + (0xFul << 16);
         Can0.setRXFilter(1, id, 0x1FFF0000ul, true);
     }
-}
-
-void setup() 
-{
-    delay(4000);  //just for easy debugging. It takes a few seconds for USB to come up properly on most OS's
-    SERIALCONSOLE.begin(115200);
-    SERIALCONSOLE.println("Starting up!");
-    SERIAL.begin(BMS_BAUD);
-#if defined (__arm__) && defined (__SAM3X8E__)
-    serialSpecialInit(USART0, BMS_BAUD); //required for Due based boards as the stock core files don't support 612500 baud.
-#endif
-
-    SERIALCONSOLE.println("Started serial interface to BMS.");
-
-    pinMode(13, INPUT);
-
-    loadSettings();
-    initializeCAN();
-
-    systemIO.setup();
-
-// look for stored data about pack in sdcard if none prompt user for pack name
-
-    bms.renumberBoardIDs();
-
-    //Logger::setLoglevel(Logger::Debug);
-
-    lastUpdate = 0;
-
-    bms.clearFaults();
 }
 
 // ahrenswett  
@@ -185,15 +154,44 @@ void pbs(){
         printf("Average Temp: ", myPack.averagePacktemp);
         printf("********MESSAGE FROM NANOPB!*********");
     }
-    
-    
 }
 
+void setup() 
+{
+    delay(4000);  //just for easy debugging. It takes a few seconds for USB to come up properly on most OS's
+    SERIALCONSOLE.begin(115200);
+    SERIALCONSOLE.println("Starting up!");
+    SERIAL.begin(BMS_BAUD);
+#if defined (__arm__) && defined (__SAM3X8E__)
+    serialSpecialInit(USART0, BMS_BAUD); //required for Due based boards as the stock core files don't support 612500 baud.
+#endif
+
+    SERIALCONSOLE.println("Started serial interface to BMS.");
+
+    pinMode(13, INPUT);
+
+    // loadSettings();
+    initializeCAN();
+            
 
 
-void loop()
+    systemIO.setup();
+    
+
+    bms.renumberBoardIDs();
+    
+
+    //Logger::setLoglevel(Logger::Debug);
+
+    lastUpdate = 0;
+
+    bms.clearFaults();
+}
+
+void loop() 
 {
     CAN_FRAME incoming;
+
     console.loop();
 
     if (millis() > (lastUpdate + 1000))
@@ -201,6 +199,7 @@ void loop()
         lastUpdate = millis();
         bms.balanceCells();
         bms.getAllVoltTemp();
+        pbs();
     }
 
     if (Can0.available()) {
