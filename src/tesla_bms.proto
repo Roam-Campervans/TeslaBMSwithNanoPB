@@ -3,11 +3,11 @@ syntax = "proto2";
 package TeslaBMS;
 
 message Pack {
-  optional int32 id = 1;
-  optional string packName = 2;  
+  // optional int32 id = 1;
+  // optional string packName = 2;  
   // required int32 numberOfModules = 3;
-  optional float currentVoltage = 4;
-  optional float averagePacktemp = 5;
+  required float currentVoltage = 4;
+  required float averagePacktemp = 5;
   // repeated Module modules = 6;
 
   // message Module {

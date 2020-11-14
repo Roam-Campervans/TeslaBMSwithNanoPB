@@ -1,7 +1,6 @@
 #if defined (__arm__) && defined (__SAM3X8E__)
 #include <chip.h>
 #endif
-
 #include <Arduino.h>
 #include "Logger.h"
 #include "SerialConsole.h"
@@ -24,6 +23,10 @@ BMSModuleManager bms;
 EEPROMSettings settings;
 SerialConsole console;
 uint32_t lastUpdate;
+
+uint8_t buffer [128];
+size_t message_length;
+bool status;
 
 //This code only applicable to Due to fixup lack of functionality in the arduino core.
 #if defined (__arm__) && defined (__SAM3X8E__)
@@ -94,67 +97,22 @@ void initializeCAN()
 }
 
 // ahrenswett  
-void pbs(float avgTemp, float packVoltage){
-    uint8_t buffer [128];
-    size_t message_length;
-    bool status;
+    // { /*Encode the message*/
+        
+    //     /* Allocate space on the stack to store the message data.
+    //      *
+    //      * Nanopb generates simple struct definitions for all the messages.
+    //      * - check out the contents of simple.pb.h!
+    //      * It is a good idea to always initialize your structures
+    //      * so that you do not have garbage data from RAM in there.
+    //      */
+        
+    // }
 
-    { /*Encode the message*/
-        
-        /* Allocate space on the stack to store the message data.
-         *
-         * Nanopb generates simple struct definitions for all the messages.
-         * - check out the contents of simple.pb.h!
-         * It is a good idea to always initialize your structures
-         * so that you do not have garbage data from RAM in there.
-         */
-        TeslaBMS_Pack mypack = TeslaBMS_Pack_init_zero;
-        // stream to write buffer
-        pb_ostream_t istream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-        
-        // TODO: needs to be a hash of the user inputed name for pack name and id needs to be set based on module ID
-        mypack.averagePacktemp = avgTemp;
-        mypack.currentVoltage = packVoltage;
-        // mypack.numberOfModules = (int32_t) BMSModuleManager::getNumOfModules;
+     
+    //     /* Allocate space for the decoded message. */
     
-        //encode
-        status = pb_encode(&istream, TeslaBMS_Pack_fields, &mypack);
-        
 
-                /* Then just check for any errors.. */
-         if (!status)
-        {
-            printf("Encoding failed: %s\n", PB_GET_ERROR(&istream));
-        }
-    }
-
-     {
-        /* Allocate space for the decoded message. */
-        TeslaBMS_Pack myPack = TeslaBMS_Pack_init_zero;
-        
-        /* Create a stream that reads from the buffer. */
-        pb_istream_t ostream = pb_istream_from_buffer(buffer, message_length);
-        
-        /* Now we are ready to decode the message. */
-        status = pb_decode(&ostream, TeslaBMS_Pack_fields, &myPack);
-        
-        /* Check for errors... */
-        if (!status)
-        {
-            printf("Decoding failed: %s\n", PB_GET_ERROR(&ostream));
-        
-        }
-        
-        /* Print the data contained in the message. */
-        printf("********MESSAGE FROM NANOPB!*********");
-        // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
-        printf("\nPack Voltage: ");
-        printf("%.3lf \n",myPack.currentVoltage);
-        printf("\nAverage Temp: ");
-        printf("%.3lf \n",myPack.averagePacktemp);
-        printf("\n********MESSAGE FROM NANOPB!*********" );
-    }
-}
 
 void setup() 
 {
@@ -199,7 +157,58 @@ void loop()
         lastUpdate = millis();
         bms.balanceCells();
         bms.getAllVoltTemp();
-        pbs(bms.getPackVoltage(), bms.getAvgTemperature());
+        
+       { // not working correctly 
+            TeslaBMS_Pack mypack = TeslaBMS_Pack_init_default;
+            // stream to write buffer
+            pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+            
+            // TODO: needs to be a hash of the user inputed name for pack name and id needs to be set based on module ID
+            mypack.averagePacktemp = bms.getAvgTemperature();
+            mypack.currentVoltage = bms.getPackVoltage();
+            printf("Pack Voltage: \n");
+            printf(" %.3f \n", mypack.currentVoltage);
+            printf("Average Temp: \n");
+            printf(" %.3f \n", mypack.averagePacktemp);
+            // looks as if data is being saved to mypack just not being passed to encoding.
+
+            // mypack.numberOfModules = (int32_t) BMSModuleManager::getNumOfModules;
+        
+            //encode
+            status = pb_encode(&ostream, TeslaBMS_Pack_fields, &mypack);
+            message_length = ostream.bytes_written;
+            
+                    /* Then just check for any errors.. */
+            if (!status)
+            {
+                printf("Encoding failed: %s\n", PB_GET_ERROR(&ostream));
+            }
+        }
+        
+        {
+            TeslaBMS_Pack mypack = TeslaBMS_Pack_init_default;
+            /* Create a stream that reads from the buffer. */
+            pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
+            
+            /* Now we are ready to decode the message. */
+            status = pb_decode(&stream, TeslaBMS_Pack_fields, &mypack);
+            
+            /* Check for errors... */
+            if (!status)
+            {
+                printf(" Decoding failed: %s\n", PB_GET_ERROR(&stream));
+            
+            }
+            
+            /* Print the data contained in the message. */
+            printf("********MESSAGE FROM NANOPB!*********\n");
+            // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
+            printf("Pack Voltage: \n");
+            printf(" %.3f \n", mypack.currentVoltage);
+            printf("Average Temp: \n");
+            printf(" %.3f \n", mypack.averagePacktemp);
+            printf("********MESSAGE FROM NANOPB!*********\n" );
+        }
     }
 
     if (Can0.available()) {
