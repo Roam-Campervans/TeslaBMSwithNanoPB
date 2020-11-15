@@ -23,8 +23,8 @@ public:
     void processCANMsg(CAN_FRAME &frame);
     void printPackSummary();
     void printPackDetails();
-    /* TODO: figure out how to pass the number of modules to protobuf message
-    static int32_t getNumOfModules(int holder);*/
+    /* TODO: figure out how to pass the number of modules to protobuf message */
+int32_t getNumOfModules();
 
 protected:
     float packVolt;                         // All modules added together

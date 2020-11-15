@@ -96,22 +96,10 @@ void initializeCAN()
     }
 }
 
-// ahrenswett  
-    // { /*Encode the message*/
-        
-    //     /* Allocate space on the stack to store the message data.
-    //      *
-    //      * Nanopb generates simple struct definitions for all the messages.
-    //      * - check out the contents of simple.pb.h!
-    //      * It is a good idea to always initialize your structures
-    //      * so that you do not have garbage data from RAM in there.
-    //      */
-        
-    // }
+bool Module_encoder(pb_ostream_t *ostream, const pb_field_t *field, void * const *arg){
 
-     
-    //     /* Allocate space for the decoded message. */
-    
+    TeslaBMS_Pack_Module *mod = 
+}
 
 
 void setup() 
@@ -158,7 +146,7 @@ void loop()
         bms.balanceCells();
         bms.getAllVoltTemp();
         
-       { // not working correctly 
+       {   /*Encode NanoPB message*/
             TeslaBMS_Pack mypack = TeslaBMS_Pack_init_default;
             // stream to write buffer
             pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
@@ -170,13 +158,11 @@ void loop()
             printf(" %.3f \n", mypack.currentVoltage);
             printf("Average Temp: \n");
             printf(" %.3f \n", mypack.averagePacktemp);
-            // looks as if data is being saved to mypack just not being passed to encoding.
-
-            // mypack.numberOfModules = (int32_t) BMSModuleManager::getNumOfModules;
+            mypack.numberOfModules = bms.getNumOfModules(); 
         
             //encode
             status = pb_encode(&ostream, TeslaBMS_Pack_fields, &mypack);
-            message_length = ostream.bytes_written;
+           // message_length = ostream.bytes_written;
             
                     /* Then just check for any errors.. */
             if (!status)
@@ -202,12 +188,26 @@ void loop()
             
             /* Print the data contained in the message. */
             printf("********MESSAGE FROM NANOPB!*********\n");
-            // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
+            // printf("Pack Name: ", myPack.packName);
             printf("Pack Voltage: \n");
             printf(" %.3f \n", mypack.currentVoltage);
             printf("Average Temp: \n");
             printf(" %.3f \n", mypack.averagePacktemp);
-            printf("********MESSAGE FROM NANOPB!*********\n" );
+            printf("Number of Modules: \n");
+           
+           //TODO: add a conditional to display number of modules only if more than one.
+            printf(" %.3f \n", mypack.numberOfModules);
+            
+            // for (TeslaBMS_Pack_Module mod : TeslaBMS_Pack_Module_fields.){
+                printf("Pack Voltage"  : "\n");
+                printf(" %.3f \n", mypack.);
+                printf("AveragecurrentVoltage Temp: \n");
+                printf(" %.3f \n", mypack.averagePacktemp);
+                printf("Number of Modules: \n");
+                printf(" %.3f \n", mypack.numberOfModules);
+            // }
+            printf("************************************\n" );
+
         }
     }
 

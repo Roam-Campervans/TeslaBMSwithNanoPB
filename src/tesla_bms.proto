@@ -4,18 +4,18 @@ package TeslaBMS;
 
 message Pack {
   // optional int32 id = 1;
-  // optional string packName = 2;  
-  // required int32 numberOfModules = 3;
+  optional string packName = 2;  
+  required int32 numberOfModules = 3;
   required float currentVoltage = 4;
   required float averagePacktemp = 5;
-  // repeated Module modules = 6;
+  repeated Module modules = 6;
 
-  // message Module {
-  //   required string id = 1;
-  //   required float moduleVoltage = 2;
-  //   required float moduleTemp = 3;
-  //   required float lowestCellVolt = 4;
-  //   required float highestCellVolt = 5;
+  message Module {
+    required string id = 1;
+    required float moduleVoltage = 2;
+    required float moduleTemp = 3;
+    required float lowestCellVolt = 4;
+    required float highestCellVolt = 5;
   //   repeated Cell cells = 6;
 
   //   message Cell{
@@ -23,5 +23,5 @@ message Pack {
   //       required float cellVolt = 2;
   //       required string balanceState = 3;
   //   }
-  // }
+  }
 }
