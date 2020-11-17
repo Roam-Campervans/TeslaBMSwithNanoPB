@@ -1,4 +1,5 @@
 #if defined (__arm__) && defined (__SAM3X8E__)
+
 #include <chip.h>
 #endif
 #include <Arduino.h>
@@ -96,10 +97,10 @@ void initializeCAN()
     }
 }
 
-bool Module_encoder(pb_ostream_t *ostream, const pb_field_t *field, void * const *arg){
+// bool Module_encoder(pb_ostream_t *ostream, const pb_field_t *field, void * const *arg){
 
-    TeslaBMS_Pack_Module *mod = 
-}
+//     TeslaBMS_Pack_Module *mod = 
+// }
 
 
 void setup() 
@@ -146,30 +147,59 @@ void loop()
         bms.balanceCells();
         bms.getAllVoltTemp();
         
-       {   /*Encode NanoPB message*/
-            TeslaBMS_Pack mypack = TeslaBMS_Pack_init_default;
+       {/*Encode NanoPB message*/
+            // Setup pack message
+            TeslaBMS_Pack mypack = TeslaBMS_Pack_init_zero;
+            // Setup module message
+            TeslaBMS_Pack_Module myModule = TeslaBMS_Pack_Module_init_zero;
+            // Setup cell message
+            // TeslaBMS_Pack_Module_Cell myCells = TeslaBMS_Pack_Module_Cell_init_zero;
             // stream to write buffer
             pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
             
-            // TODO: needs to be a hash of the user inputed name for pack name and id needs to be set based on module ID
+            /* TODO: Set a unique pack id sing Uuid and store in 
+            maybe use the current ip address with some salt then hash*/
+
+            // mypack.packName = userinput yet to be defined 
             mypack.averagePacktemp = bms.getAvgTemperature();
+           
             mypack.currentVoltage = bms.getPackVoltage();
             printf("Pack Voltage: \n");
             printf(" %.3f \n", mypack.currentVoltage);
             printf("Average Temp: \n");
             printf(" %.3f \n", mypack.averagePacktemp);
             mypack.numberOfModules = bms.getNumOfModules(); 
+
+            for(int i = 0; i < mypack.numberOfModules; i++){
+                myModule.id = i;
+                myModule.moduleVoltage = bms.modules[i].getAverageV();
+
+                // required string id = 1;
+                // required float moduleVoltage = 2;
+                // required float moduleTemp = 3;
+                // required float lowestCellVolt = 4;
+                // required float highestCellVolt = 5;
+            }
         
             //encode
-            status = pb_encode(&ostream, TeslaBMS_Pack_fields, &mypack);
-           // message_length = ostream.bytes_written;
-            
-                    /* Then just check for any errors.. */
-            if (!status)
-            {
+                // modules
+            if (! pb_encode_submessage(&ostream, TeslaBMS_Pack_Module_fields, &mypack.modules)){
+                printf("pb_encode_submessage Failed!\n");
+                return;
+            }
+                // cells
+            // (! pb_encode_submessage(&ostream, TeslaBMS_Pack_Module_Cell_fields, &mypack.modules.cells)){
+            //     printf("pb_encode_submessage Failed!\n");
+            //     return;
+            // }
+
+            if (!(status = pb_encode(&ostream, TeslaBMS_Pack_fields, &mypack))){
+               // message_length = ostream.bytes_written;
+
+               /* Then just check for any errors.. */
                 printf("Encoding failed: %s\n", PB_GET_ERROR(&ostream));
             }
-        }
+                    
         
         {
             TeslaBMS_Pack mypack = TeslaBMS_Pack_init_default;

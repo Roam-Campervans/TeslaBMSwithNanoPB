@@ -24,7 +24,8 @@ public:
     void printPackSummary();
     void printPackDetails();
     /* TODO: figure out how to pass the number of modules to protobuf message */
-int32_t getNumOfModules();
+    int32_t getNumOfModules();
+    BMSModule getModules(int i);
 
 protected:
     float packVolt;                         // All modules added together

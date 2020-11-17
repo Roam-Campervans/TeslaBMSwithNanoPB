@@ -19,7 +19,7 @@ typedef struct _TeslaBMS_Pack {
 } TeslaBMS_Pack;
 
 typedef struct _TeslaBMS_Pack_Module {
-    pb_callback_t id;
+    int32_t id;
     float moduleVoltage;
     float moduleTemp;
     float lowestCellVolt;
@@ -33,9 +33,9 @@ extern "C" {
 
 /* Initializer values for message structs */
 #define TeslaBMS_Pack_init_default               {{{NULL}, NULL}, 0, 0, 0, {{NULL}, NULL}}
-#define TeslaBMS_Pack_Module_init_default        {{{NULL}, NULL}, 0, 0, 0, 0}
+#define TeslaBMS_Pack_Module_init_default        {0, 0, 0, 0, 0}
 #define TeslaBMS_Pack_init_zero                  {{{NULL}, NULL}, 0, 0, 0, {{NULL}, NULL}}
-#define TeslaBMS_Pack_Module_init_zero           {{{NULL}, NULL}, 0, 0, 0, 0}
+#define TeslaBMS_Pack_Module_init_zero           {0, 0, 0, 0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
 #define TeslaBMS_Pack_packName_tag               2
@@ -61,12 +61,12 @@ X(a, CALLBACK, REPEATED, MESSAGE,  modules,           6)
 #define TeslaBMS_Pack_modules_MSGTYPE TeslaBMS_Pack_Module
 
 #define TeslaBMS_Pack_Module_FIELDLIST(X, a) \
-X(a, CALLBACK, REQUIRED, STRING,   id,                1) \
+X(a, STATIC,   REQUIRED, INT32,    id,                1) \
 X(a, STATIC,   REQUIRED, FLOAT,    moduleVoltage,     2) \
 X(a, STATIC,   REQUIRED, FLOAT,    moduleTemp,        3) \
 X(a, STATIC,   REQUIRED, FLOAT,    lowestCellVolt,    4) \
 X(a, STATIC,   REQUIRED, FLOAT,    highestCellVolt,   5)
-#define TeslaBMS_Pack_Module_CALLBACK pb_default_field_callback
+#define TeslaBMS_Pack_Module_CALLBACK NULL
 #define TeslaBMS_Pack_Module_DEFAULT NULL
 
 extern const pb_msgdesc_t TeslaBMS_Pack_msg;
@@ -78,7 +78,7 @@ extern const pb_msgdesc_t TeslaBMS_Pack_Module_msg;
 
 /* Maximum encoded size of messages (where known) */
 /* TeslaBMS_Pack_size depends on runtime parameters */
-/* TeslaBMS_Pack_Module_size depends on runtime parameters */
+#define TeslaBMS_Pack_Module_size                31
 
 #ifdef __cplusplus
 } /* extern "C" */

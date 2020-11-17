@@ -11,7 +11,7 @@ message Pack {
   repeated Module modules = 6;
 
   message Module {
-    required string id = 1;
+    required int32 id = 1;
     required float moduleVoltage = 2;
     required float moduleTemp = 3;
     required float lowestCellVolt = 4;

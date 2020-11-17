@@ -582,3 +582,7 @@ void BMSModuleManager::setBatteryID()
 int32_t BMSModuleManager::getNumOfModules(){
    return numFoundModules;
 }
+
+BMSModule BMSModuleManager::getModules(int i){
+    return modules[i];
+}
