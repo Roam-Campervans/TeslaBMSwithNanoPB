@@ -97,10 +97,107 @@ void initializeCAN()
     }
 }
 
-// bool Module_encoder(pb_ostream_t *ostream, const pb_field_t *field, void * const *arg){
 
-//     TeslaBMS_Pack_Module *mod = 
+// bool TeslaBMS_encode_numbers(pb_ostream_t *ostream, const pb_field_t *field, void * const *arg)
+// {
+// // pass in an array of modules
+
+//     BMSModuleManager * source = (BMSModuleManager*)(*arg);
+//     // encode all numbers
+//     for (int i = 0; i < 6; i++) // all modules have 6 cells
+//     {
+//         if (!pb_encode_tag_for_field(ostream, field))
+//         {
+//             const char * error = PB_GET_ERROR(ostream);
+//             printf("SimpleMessage_encode_numbers error: %s", error);
+//             return false;
+//         }
+//         /* Encode a submessage field.
+//         * You need to pass the pb_field_t array and pointer to struct, just like
+//         * with pb_encode(). This internally encodes the submessage twice, first to
+//         * calculate message size and then to actually write it out.
+//         */
+
+//         if (!pb_encode_submessage(ostream, source->(   i]))
+//         {
+//             const char * error = PB_GET_ERROR(ostream);
+//             printf("SimpleMessage_encode_numbers error: %s", error);
+//             return false;
+//         }
+//     }
+
+//     return true;
 // }
+
+
+
+
+
+
+
+/*Encodes NanoPB message
+    Good recource for help on encoding repeated messages
+    https://stackoverflow.com/questions/45979984/creating-callbacks-and-structs-for-repeated-field-in-a-protobuf-message-in-nanop 
+    
+    Good resource for help with nested messages
+    https://github.com/nanopb/nanopb/issues/364
+    uint8_t *buffer, size_t *message_length;
+bool status;
+*/
+void encoder(){
+    // Setup pack message
+    TeslaBMS_Pack mypack = TeslaBMS_Pack_init_zero;
+    // Setup module message
+    TeslaBMS_Pack_Module myModule = TeslaBMS_Pack_Module_init_zero;
+    // Setup cell message
+    // TeslaBMS_Pack_Module_Cell myCells = TeslaBMS_Pack_Module_Cell_init_zero;
+    // stream to write buffer
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+    
+    /* TODO: Set a unique pack id sing Uuid and store in 
+    maybe use the current ip address with some salt then hash*/
+
+    // mypack.packName = userinput yet to be defined 
+    mypack.averagePacktemp = bms.getAvgTemperature();
+    mypack.currentVoltage = bms.getPackVoltage();
+    printf("Pack Voltage: \n");
+    printf(" %.3f \n", mypack.currentVoltage);
+    printf("Average Temp: \n");
+    printf(" %.3f \n", mypack.averagePacktemp);
+    mypack.numberOfModules = bms.getNumOfModules();
+    
+    // get module val?
+    // for(int i = 0; i < mypack.numberOfModules; i++){
+    //     BMSModule currentMod = bms.getModules(i);
+    //     myModule.id = i;
+    //     myModule.moduleVoltage = currentMod.getAverageV();
+    //     myModule.highestCellVolt = currentMod.getHighCellV();
+    //     myModule.lowestCellVolt = currentMod.getLowCellV();
+    //     myModule.moduleTemp = currentMod.getAvgTemp();
+    // }
+
+
+    
+    //encode
+        // modules
+    if (!(pb_encode_submessage(&stream, TeslaBMS_Pack_Module_fields, &mypack.modules))){
+        printf("pb_encode_submessage Failed!\n");
+        return;
+    }
+        // cells
+    // (! pb_encode_submessage(&ostream, TeslaBMS_Pack_Module_Cell_fields, &mypack.modules.cells)){
+    //     printf("pb_encode_submessage Failed!\n");
+    //     return;
+    // }
+
+    if (!(status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack))){
+        // message_length = ostream.bytes_written;
+
+        /* Then just check for any errors.. */
+        printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+    }
+            
+}
 
 
 void setup() 
@@ -146,99 +243,48 @@ void loop()
         lastUpdate = millis();
         bms.balanceCells();
         bms.getAllVoltTemp();
-        
-       {/*Encode NanoPB message*/
-            // Setup pack message
-            TeslaBMS_Pack mypack = TeslaBMS_Pack_init_zero;
-            // Setup module message
-            TeslaBMS_Pack_Module myModule = TeslaBMS_Pack_Module_init_zero;
-            // Setup cell message
-            // TeslaBMS_Pack_Module_Cell myCells = TeslaBMS_Pack_Module_Cell_init_zero;
-            // stream to write buffer
-            pb_ostream_t ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-            
-            /* TODO: Set a unique pack id sing Uuid and store in 
-            maybe use the current ip address with some salt then hash*/
 
-            // mypack.packName = userinput yet to be defined 
-            mypack.averagePacktemp = bms.getAvgTemperature();
-           
-            mypack.currentVoltage = bms.getPackVoltage();
-            printf("Pack Voltage: \n");
-            printf(" %.3f \n", mypack.currentVoltage);
-            printf("Average Temp: \n");
-            printf(" %.3f \n", mypack.averagePacktemp);
-            mypack.numberOfModules = bms.getNumOfModules(); 
-
-            for(int i = 0; i < mypack.numberOfModules; i++){
-                myModule.id = i;
-                myModule.moduleVoltage = bms.modules[i].getAverageV();
-
-                // required string id = 1;
-                // required float moduleVoltage = 2;
-                // required float moduleTemp = 3;
-                // required float lowestCellVolt = 4;
-                // required float highestCellVolt = 5;
-            }
-        
-            //encode
-                // modules
-            if (! pb_encode_submessage(&ostream, TeslaBMS_Pack_Module_fields, &mypack.modules)){
-                printf("pb_encode_submessage Failed!\n");
-                return;
-            }
-                // cells
-            // (! pb_encode_submessage(&ostream, TeslaBMS_Pack_Module_Cell_fields, &mypack.modules.cells)){
-            //     printf("pb_encode_submessage Failed!\n");
-            //     return;
-            // }
-
-            if (!(status = pb_encode(&ostream, TeslaBMS_Pack_fields, &mypack))){
-               // message_length = ostream.bytes_written;
-
-               /* Then just check for any errors.. */
-                printf("Encoding failed: %s\n", PB_GET_ERROR(&ostream));
-            }
-                    
-        
         {
-            TeslaBMS_Pack mypack = TeslaBMS_Pack_init_default;
-            /* Create a stream that reads from the buffer. */
-            pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
-            
-            /* Now we are ready to decode the message. */
-            status = pb_decode(&stream, TeslaBMS_Pack_fields, &mypack);
-            
-            /* Check for errors... */
-            if (!status)
-            {
-                printf(" Decoding failed: %s\n", PB_GET_ERROR(&stream));
-            
-            }
-            
-            /* Print the data contained in the message. */
-            printf("********MESSAGE FROM NANOPB!*********\n");
-            // printf("Pack Name: ", myPack.packName);
-            printf("Pack Voltage: \n");
-            printf(" %.3f \n", mypack.currentVoltage);
-            printf("Average Temp: \n");
-            printf(" %.3f \n", mypack.averagePacktemp);
-            printf("Number of Modules: \n");
-           
-           //TODO: add a conditional to display number of modules only if more than one.
-            printf(" %.3f \n", mypack.numberOfModules);
-            
-            // for (TeslaBMS_Pack_Module mod : TeslaBMS_Pack_Module_fields.){
-                printf("Pack Voltage"  : "\n");
-                printf(" %.3f \n", mypack.);
-                printf("AveragecurrentVoltage Temp: \n");
-                printf(" %.3f \n", mypack.averagePacktemp);
-                printf("Number of Modules: \n");
-                printf(" %.3f \n", mypack.numberOfModules);
-            // }
-            printf("************************************\n" );
-
+        encoder();
         }
+        // {
+        //     TeslaBMS_Pack mypack = TeslaBMS_Pack_init_default;
+        //     /* Create a stream that reads from the buffer. */
+        //     pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
+            
+        //     /* Now we are ready to decode the message. */
+        //     status = pb_decode(&stream, TeslaBMS_Pack_fields, &mypack);
+            
+        //     /* Check for errors... */
+        //     if (!status)
+        //     {
+        //         printf(" Decoding failed: %s\n", PB_GET_ERROR(&stream));
+            
+        //     }
+            
+        //     /* Print the data contained in the message. */
+        //     printf("********MESSAGE FROM NANOPB!*********\n");
+        //     // printf("Pack Name: ", myPack.packName);
+        //     printf("Pack Voltage: \n");
+        //     printf(" %.3f \n", mypack.currentVoltage);
+        //     printf("Average Temp: \n");
+        //     printf(" %.3f \n", mypack.averagePacktemp);
+        //     printf("Number of Modules: \n");
+           
+        //    //TODO: add a conditional to display number of modules only if more than one.
+        //     printf(" %.3f \n", mypack.numberOfModules);
+            
+        //     // for (TeslaBMS_Pack_Module mod : TeslaBMS_Pack_Module_fields.){
+        //     //     printf("Pack Voltage: \n");
+        //     //     printf(" %.3f \n", mypack.currentVoltage);
+        //     //     printf("Average Temp: \n");
+        //     //     printf(" %.3f \n", mypack.averagePacktemp);
+        //     //     printf("Number of Modules: \n");
+        //     //     printf(" %.3f \n", mypack.numberOfModules);
+        //     // // }
+        //     printf("************************************\n" );
+
+        // }
     }
 
     if (Can0.available()) {

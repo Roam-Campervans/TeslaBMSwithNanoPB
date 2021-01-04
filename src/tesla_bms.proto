@@ -16,12 +16,12 @@ message Pack {
     required float moduleTemp = 3;
     required float lowestCellVolt = 4;
     required float highestCellVolt = 5;
-  //   repeated Cell cells = 6;
+    repeated Cell cells = 6;
+  }
 
-  //   message Cell{
-  //       required int32 cellId = 1;
-  //       required float cellVolt = 2;
-  //       required string balanceState = 3;
-  //   }
+  message Cell{
+    required int32 cellId = 1;
+    required float cellVolt = 2;
+    required string balanceState = 3;
   }
 }
