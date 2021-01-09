@@ -28,7 +28,7 @@ public:
     BMSModule getModules(int i);
 
 protected:
-    float packVolt;                         // All modules added together
+    float packVolt;  // All modules added together
     float lowestPackVolt;
     float highestPackVolt;
     float lowestPackTemp;

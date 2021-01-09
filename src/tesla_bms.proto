@@ -16,7 +16,7 @@ message Pack {
     required float moduleTemp = 3;
     required float lowestCellVolt = 4;
     required float highestCellVolt = 5;
-    repeated Cell cells = 6;
+    repeated Cell cells = 6[(nanopb).max_count = 6, (nanopb).fixed_count = true];
   }
 
   message Cell{

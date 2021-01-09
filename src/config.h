@@ -30,7 +30,7 @@
 #define REG_ADC_CONV        0x34
 #define REG_ADDR_CTRL       0x3B
 
-#define MAX_MODULE_ADDR     0x3E
+#define MAX_MODULE_ADDR     0x3E //62
 
 #define EEPROM_VERSION      0x10    //update any time EEPROM struct below is changed.
 #define EEPROM_PAGE         0

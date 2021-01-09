@@ -2,6 +2,9 @@
 #include "BMSModuleManager.h"
 #include "BMSUtil.h"
 #include "Logger.h"
+#include <iostream>
+using namespace std;
+
 
 extern EEPROMSettings settings;
 
@@ -11,6 +14,7 @@ BMSModuleManager::BMSModuleManager()
         modules[i].setExists(false);
         modules[i].setAddress(i);
     }
+
     lowestPackVolt = 1000.0f;
     highestPackVolt = 0.0f;
     lowestPackTemp = 200.0f;
@@ -18,13 +22,13 @@ BMSModuleManager::BMSModuleManager()
     isFaulted = false;
 }
 
-void BMSModuleManager::balanceCells()
-{  
-    for (int address = 1; address <= MAX_MODULE_ADDR; address++)
-    {
-        if (modules[address].isExisting()) modules[address].balanceCells();
-    }
-}
+// void BMSModuleManager::balanceCells()
+// {  
+//     for (int address = 1; address <= MAX_MODULE_ADDR; address++)
+//     {
+//         if (modules[address].isExisting()) modules[address].balanceCells();
+//     }
+// }
 
 /*
  * Try to set up any unitialized boards. Send a command to address 0 and see if there is a response. If there is then there is
@@ -37,6 +41,11 @@ void BMSModuleManager::balanceCells()
  */
 void BMSModuleManager::setupBoards()
 {
+    int numberOfTestModules;
+    cout << "please enter the number of test modules"
+    cin >> 
+
+
     uint8_t payload[3];
     uint8_t buff[10];
     int retLen;
@@ -122,9 +131,9 @@ void BMSModuleManager::findBoards()
 */
 void BMSModuleManager::renumberBoardIDs()
 {
-    uint8_t payload[3];
-    uint8_t buff[8];
-    int attempts = 1;
+    // uint8_t payload[3];
+    // uint8_t buff[8];
+    // int attempts = 1;
 
     for (int y = 1; y < 63; y++) 
     {
@@ -132,17 +141,20 @@ void BMSModuleManager::renumberBoardIDs()
         numFoundModules = 0;
     }
 
-    while (attempts < 3)
-    {
-        payload[0] = 0x3F << 1; //broadcast the reset command
-        payload[1] = 0x3C;//reset
-        payload[2] = 0xA5;//data to cause a reset
-        BMSUtil::sendData(payload, 3, true);
-        delay(100);
-        BMSUtil::getReply(buff, 8);
-        if (buff[0] == 0x7F && buff[1] == 0x3C && buff[2] == 0xA5 && buff[3] == 0x57) break;
-        attempts++;
-    }
+    // while (attempts < 3)
+    // {
+    //     //
+
+    //     // payload[0] = 0x3F << 1; //broadcast the reset command
+    //     // payload[1] = 0x3C;//reset
+    //     // payload[2] = 0xA5;//data to cause a reset
+    //     // BMSUtil::sendData(payload, 3, true);
+    //     // delay(100);
+    //     // BMSUtil::getReply(buff, 8);
+    //     // if (buff[0] == 0x7F && buff[1] == 0x3C && buff[2] == 0xA5 && buff[3] == 0x57) break;
+    //     // attempts++;
+
+    // }
 
     setupBoards();
 }

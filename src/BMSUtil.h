@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "Logger.h"
-
+//whole file is most likely unneeded for testing nanopb
 class BMSUtil {    
 public:
     

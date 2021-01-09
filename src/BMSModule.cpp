@@ -2,11 +2,9 @@
 #include "BMSModule.h"
 #include "BMSUtil.h"
 #include "Logger.h"
-// #include "tesla_bms.pb.h"
 
 extern EEPROMSettings settings;
 
-//This is where I belive I may need to add a message builder. 
 BMSModule::BMSModule()
 {
     //sets up the cells in the module
@@ -16,8 +14,7 @@ BMSModule::BMSModule()
         lowestCellVolt[i] = 5.0f;
         highestCellVolt[i] = 0.0f;
         balanceState[i] = 0;
-        // // store in protobuffs
-        // cell->set_cellId(i)
+        
          
     }
     moduleVolt = 0.0f;
@@ -29,46 +26,42 @@ BMSModule::BMSModule()
     highestModuleVolt = 0.0f;
     exists = false;
     moduleAddress = 0;
-    goodPackets = 0;
-    badPackets = 0;
+    // goodPackets = 0;
+    // badPackets = 0;
 }
 
 /*
 Reading the status of the board to identify any flags, will be more useful when implementing a sleep cycle
 */
-void BMSModule::readStatus()
-{
-  uint8_t payload[3];
-  uint8_t buff[8];
-  payload[0] = moduleAddress << 1; //adresss
-  payload[1] = REG_ALERT_STATUS;//Alert Status start
-  payload[2] = 0x04;
-  BMSUtil::sendDataWithReply(payload, 3, false, buff, 7);
-  alerts = buff[3];
-  faults = buff[4];
-  COVFaults = buff[5];
-  CUVFaults = buff[6];
-}
+// void BMSModule::readStatus()
+// {
+//   uint8_t payload[3];
+//   uint8_t buff[8];
+//   payload[0] = moduleAddress << 1; //adresss
+//   payload[1] = REG_ALERT_STATUS;//Alert Status start
+//   payload[2] = 0x04;
+//   BMSUtil::sendDataWithReply(payload, 3, false, buff, 7);
+//   alerts = buff[3];
+//   faults = buff[4];
+//   COVFaults = buff[5];
+//   CUVFaults = buff[6];
+// }
 
-uint8_t BMSModule::getFaults()
-{
-    return faults;
-}
 
-uint8_t BMSModule::getAlerts()
-{
-    return alerts;
-}
+// uint8_t BMSModule::getAlerts()
+// {
+//     return alerts;
+// }
 
-uint8_t BMSModule::getCOVCells()
-{
-    return COVFaults;
-}
+// uint8_t BMSModule::getCOVCells()
+// {
+//     return COVFaults;
+// }
 
-uint8_t BMSModule::getCUVCells()
-{
-    return CUVFaults;
-}
+// uint8_t BMSModule::getCUVCells()
+// {
+//     return CUVFaults;
+// }
 
 /*
 Reading the setpoints, after a reset the default tesla setpoints are loaded
@@ -103,26 +96,26 @@ bool BMSModule::readModuleValues()
 
     payload[0] = moduleAddress << 1;
 
-    readStatus();
+    // readStatus();
     Logger::debug("Module %i   alerts=%X   faults=%X   COV=%X   CUV=%X", moduleAddress, alerts, faults, COVFaults, CUVFaults);
 
-    payload[1] = REG_ADC_CTRL;
-    payload[2] = 0b00111101; //ADC Auto mode, read every ADC input we can (Both Temps, Pack, 6 cells)
-    BMSUtil::sendDataWithReply(payload, 3, true, buff, 3);
+    // payload[1] = REG_ADC_CTRL;
+    // payload[2] = 0b00111101; //ADC Auto mode, read every ADC input we can (Both Temps, Pack, 6 cells)
+    // // BMSUtil::sendDataWithReply(payload, 3, true, buff, 3);
 
-    payload[1] = REG_IO_CTRL;
-    payload[2] = 0b00000011; //enable temperature measurement VSS pins
-    BMSUtil::sendDataWithReply(payload, 3, true, buff, 3);
+    // payload[1] = REG_IO_CTRL;
+    // payload[2] = 0b00000011; //enable temperature measurement VSS pins
+    // // BMSUtil::sendDataWithReply(payload, 3, true, buff, 3);
 
-    payload[1] = REG_ADC_CONV; //start all ADC conversions
-    payload[2] = 1;
-    BMSUtil::sendDataWithReply(payload, 3, true, buff, 3);
+    // payload[1] = REG_ADC_CONV; //start all ADC conversions
+    // payload[2] = 1;
+    // // BMSUtil::sendDataWithReply(payload, 3, true, buff, 3);
 
-    payload[1] = REG_GPAI; //start reading registers at the module voltage registers
-    payload[2] = 0x12; //read 18 bytes (Each value takes 2 - ModuleV, CellV1-6, Temp1, Temp2)
-    retLen = BMSUtil::sendDataWithReply(payload, 3, false, buff, 22);
+    // payload[1] = REG_GPAI; //start reading registers at the module voltage registers
+    // payload[2] = 0x12; //read 18 bytes (Each value takes 2 - ModuleV, CellV1-6, Temp1, Temp2)
+    // // retLen = BMSUtil::sendDataWithReply(payload, 3, false, buff, 22);
 
-    calcCRC = BMSUtil::genCRC(buff, retLen-1);
+    // calcCRC = BMSUtil::genCRC(buff, retLen-1);
     Logger::debug("Sent CRC: %x     Calculated CRC: %x", buff[21], calcCRC);
 
     //18 data bytes, address, command, length, and CRC = 22 bytes returned
@@ -178,7 +171,7 @@ bool BMSModule::readModuleValues()
    // delay(3);        
    // BMSUtil::getReply(buff, 50);    //TODO: we're not validating the reply here. Perhaps check to see if a valid reply came back    
 
-    return retVal;
+    return  ;
 }
 
 float BMSModule::getCellVoltage(int cell)

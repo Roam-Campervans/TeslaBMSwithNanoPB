@@ -180,10 +180,7 @@ void encoder(){
     
     //encode
         // modules
-    if (!(pb_encode_submessage(&stream, TeslaBMS_Pack_Module_fields, &mypack.modules))){
-        printf("pb_encode_submessage Failed!\n");
-        return;
-    }
+    
         // cells
     // (! pb_encode_submessage(&ostream, TeslaBMS_Pack_Module_Cell_fields, &mypack.modules.cells)){
     //     printf("pb_encode_submessage Failed!\n");
@@ -247,44 +244,6 @@ void loop()
         {
         encoder();
         }
-        // {
-        //     TeslaBMS_Pack mypack = TeslaBMS_Pack_init_default;
-        //     /* Create a stream that reads from the buffer. */
-        //     pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
-            
-        //     /* Now we are ready to decode the message. */
-        //     status = pb_decode(&stream, TeslaBMS_Pack_fields, &mypack);
-            
-        //     /* Check for errors... */
-        //     if (!status)
-        //     {
-        //         printf(" Decoding failed: %s\n", PB_GET_ERROR(&stream));
-            
-        //     }
-            
-        //     /* Print the data contained in the message. */
-        //     printf("********MESSAGE FROM NANOPB!*********\n");
-        //     // printf("Pack Name: ", myPack.packName);
-        //     printf("Pack Voltage: \n");
-        //     printf(" %.3f \n", mypack.currentVoltage);
-        //     printf("Average Temp: \n");
-        //     printf(" %.3f \n", mypack.averagePacktemp);
-        //     printf("Number of Modules: \n");
-           
-        //    //TODO: add a conditional to display number of modules only if more than one.
-        //     printf(" %.3f \n", mypack.numberOfModules);
-            
-        //     // for (TeslaBMS_Pack_Module mod : TeslaBMS_Pack_Module_fields.){
-        //     //     printf("Pack Voltage: \n");
-        //     //     printf(" %.3f \n", mypack.currentVoltage);
-        //     //     printf("Average Temp: \n");
-        //     //     printf(" %.3f \n", mypack.averagePacktemp);
-        //     //     printf("Number of Modules: \n");
-        //     //     printf(" %.3f \n", mypack.numberOfModules);
-        //     // // }
-        //     printf("************************************\n" );
-
-        // }
     }
 
     if (Can0.available()) {
