@@ -28,7 +28,7 @@
 #define REG_BAL_CTRL        0x32
 #define REG_BAL_TIME        0x33
 #define REG_ADC_CONV        0x34
-#define REG_ADDR_CTRL       0x3B
+#define REG_ADDR_CTRL       0x3B //59
 
 #define MAX_MODULE_ADDR     0x3E //62
 
