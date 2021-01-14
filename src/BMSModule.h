@@ -1,4 +1,5 @@
 #pragma once
+#include "TestModuleData.h"
 
 class BMSModule
 {
@@ -31,7 +32,8 @@ public:
     void setExists(bool ex);
     void balanceCells();
     uint8_t getBalancingState(int cell);
-
+    TestModuleData testMod;
+    
 private:
     float cellVolt[6];          // calculated as 16 bit value * 6.250 / 16383 = volts
     float lowestCellVolt[6];
@@ -44,6 +46,7 @@ private:
     float highestModuleVolt;
     uint8_t balanceState[6]; //0 = balancing off for this cell, 1 = balancing currently on
     bool exists;
+    bool asleep;
     int alerts;
     int faults;
     int COVFaults;

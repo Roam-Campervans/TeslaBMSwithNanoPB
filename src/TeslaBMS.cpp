@@ -14,6 +14,7 @@
 #include  "pb_encode.c"
 #include "pb_decode.c"
 #include "pb_common.c"
+#include "TestModuleData.h"
 #include "tesla_bms.pb.h"
 
 // #define BMS_BAUD  612500
