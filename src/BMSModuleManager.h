@@ -11,16 +11,16 @@ public:
     void setupBoards();
     void findBoards();
     void renumberBoardIDs();
-    void clearFaults();
-    void sleepBoards();
-    void wakeBoards();
+    // void clearFaults();
+    // void sleepBoards();
+    // void wakeBoards();
     void getAllVoltTemp();
     void readSetpoints();
-    void setBatteryID();
+    // void setBatteryID();
     float getPackVoltage();
     float getAvgTemperature();
     float getAvgCellVolt();
-    void processCANMsg(CAN_FRAME &frame);
+    // void processCANMsg(CAN_FRAME &frame);
     void printPackSummary();
     void printPackDetails();
     /* TODO: figure out how to pass the number of modules to protobuf message */

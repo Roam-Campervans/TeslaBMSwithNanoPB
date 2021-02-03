@@ -36,28 +36,38 @@
 //         }
 //     }
 
-//      {
-//         /* Allocate space for the decoded message. */
-//         TeslaBMS_Pack myPack = TeslaBMS_Pack_init_zero;
-        
-//         /* Create a stream that reads from the buffer. */
-//         pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
-        
-//         /* Now we are ready to decode the message. */
-//         status = pb_decode(&stream, TeslaBMS_Pack_fields, &myPack);
-        
-//         /* Check for errors... */
-//         if (!status)
+//      
+
+
+
+
+// bool TeslaBMS_encode_numbers(pb_ostream_t *ostream, const pb_field_t *field, void * const *arg)
+// {
+// // pass in an array of modules
+
+//     BMSModuleManager * source = (BMSModuleManager*)(*arg);
+//     // encode all numbers
+//     for (int i = 0; i < 6; i++) // all modules have 6 cells
+//     {
+//         if (!pb_encode_tag_for_field(ostream, field))
 //         {
-//             printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));
-        
+//             const char * error = PB_GET_ERROR(ostream);
+//             printf("SimpleMessage_encode_numbers error: %s", error);
+//             return false;
 //         }
-        
-//         /* Print the data contained in the message. */
-//         printf("********MESSAGE FROM NANOPB!*********");
-//         // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
-//         printf("Pack Voltage: ", (int)myPack.currentVoltage);
-//         printf("Average Temp: ", myPack.averagePacktemp);
-//         printf("********MESSAGE FROM NANOPB!*********");
+//         /* Encode a submessage field.
+//         * You need to pass the pb_field_t array and pointer to struct, just like
+//         * with pb_encode(). This internally encodes the submessage twice, first to
+//         * calculate message size and then to actually write it out.
+//         */
+
+//         if (!pb_encode_submessage(ostream, source->(   i]))
+//         {
+//             const char * error = PB_GET_ERROR(ostream);
+//             printf("SimpleMessage_encode_numbers error: %s", error);
+//             return false;
+//         }
 //     }
+
+//     return true;
 // }
