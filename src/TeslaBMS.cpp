@@ -41,7 +41,7 @@ void encoder(){
     // Setup pack message
     TeslaBMS_Pack mypack = TeslaBMS_Pack_init_zero;
     // Setup module message
-    TeslaBMS_Pack_Module myModule = TeslaBMS_Pack_Module_init_zero;
+    // TeslaBMS_Pack_Module myModule = TeslaBMS_Pack_Module_init_zero;
     // Setup cell message
     // TeslaBMS_Pack_Module_Cell myCells = TeslaBMS_Pack_Module_Cell_init_zero;
     // stream to write buffer
@@ -82,13 +82,17 @@ void decode(){
     {
         printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));
     }
+    else
+    {
+        /* Print the data contained in the message. */
+        printf("\n********MESSAGE FROM NANOPB!*********\n");
+        // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
+        printf("Pack Voltage: %.3f\n", myPack.currentVoltage);
+        printf("Average Temp: %.3f\n", myPack.averagePacktemp);
+        printf("********MESSAGE FROM NANOPB!*********\n");
+    }
     
-    /* Print the data contained in the message. */
-    printf("********MESSAGE FROM NANOPB!*********");
-    // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
-    printf("Pack Voltage: ", (int)myPack.currentVoltage);
-    printf("Average Temp: ", myPack.averagePacktemp);
-    printf("********MESSAGE FROM NANOPB!*********");
+    
 }
 
 
@@ -108,14 +112,15 @@ void setup()
 
 void loop() 
 {
-    CAN_FRAME incoming;
+    // CAN_FRAME incoming;
 
     console.loop();
 
     if (millis() > (lastUpdate + 1000))
     {    
+    
         lastUpdate = millis();
-        bms.balanceCells();
+        // bms.balanceCells();
         bms.getAllVoltTemp();
 
         {

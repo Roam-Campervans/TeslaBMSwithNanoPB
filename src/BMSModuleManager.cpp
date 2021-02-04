@@ -3,7 +3,8 @@
 // #include "BMSUtil.h"
 #include "Logger.h"
 #include "TestModuleData.h"
-#include <iostream>
+#include "BMSModule.h"
+// #include <iostream>
 using namespace std;
 
 extern TestModuleData modData;
@@ -38,7 +39,7 @@ void BMSModuleManager::setupBoards()
     for (int y = 1; y < 63; y++) 
     {
         //set the module as existing and increase modules found
-        if (!modules[y].isExisting())
+        if (!modules[y].isExisting() && (y<=modData.numberOfTestModules))
         {
             modules[y].setExists(true);
             numFoundModules++;
@@ -69,22 +70,25 @@ void BMSModuleManager::getAllVoltTemp()
     packVolt = 0.0f;
     for (int x = 1; x <= MAX_MODULE_ADDR; x++)
     {
+        // TODO: this is part of the problem as all modules are existing
         if (modules[x].isExisting()) 
         {
-            Logger::debug("");
-            Logger::debug("Module %i exists. Reading voltage and temperature values", x);
-            modules[x].readModuleValues();
-            Logger::debug("Module voltage: %f", modules[x].getModuleVoltage());
-            Logger::debug("Lowest Cell V: %f     Highest Cell V: %f", modules[x].getLowCellV(), modules[x].getHighCellV());
-            Logger::debug("Temp: %f", modules[x].getTemperature());
+            printf("\n");
+            printf("Module %i exists. Reading voltage and temperature values\n", x);
+            // modules[x].readModuleValues();
+            printf("Module voltage: %f\n", modules[x].getModuleVoltage());
+            printf("Lowest Cell V: %f     Highest Cell V: %f \n", modules[x].getLowCellV(), modules[x].getHighCellV());
+            printf("Temp: %f\n", modules[x].getTemperature());
             packVolt += modules[x].getModuleVoltage();
             // if (modules[x].getLowTemp() < lowestPackTemp) lowestPackTemp = modules[x].getLowTemp();
             // if (modules[x].getHighTemp() > highestPackTemp) highestPackTemp = modules[x].getHighTemp();            
         }
+        printf("\npackvolt is now %f\n",(packVolt/numFoundModules));
+        packVolt = (packVolt/numFoundModules);
     }
 
-    if (packVolt > highestPackVolt) highestPackVolt = packVolt;
-    if (packVolt < lowestPackVolt) lowestPackVolt = packVolt;
+    // if (packVolt > highestPackVolt) highestPackVolt = packVolt;
+    // if (packVolt < lowestPackVolt) lowestPackVolt = packVolt;
 
     // if (digitalRead(13) == LOW) {
     //     if (!isFaulted) Logger::error("One or more BMS modules have entered the fault state!");
@@ -107,7 +111,7 @@ float BMSModuleManager::getAvgTemperature()
     float avg = 0.0f;    
     for (int x = 1; x <= MAX_MODULE_ADDR; x++)
     {
-        if (modules[x].isExisting()) avg += modules[x].getAvgTemp();
+        if (modules[x].isExisting()) avg += modules[x].getTemperature();
     }
     avg = avg / (float)numFoundModules;
 
@@ -263,7 +267,7 @@ void BMSModuleManager::printPackDetails()
     // uint8_t alerts;
     // uint8_t COV;
     // uint8_t CUV;
-    int cellNum = 0;
+    // int cellNum = 0;
 
     Logger::console("");
     Logger::console("");

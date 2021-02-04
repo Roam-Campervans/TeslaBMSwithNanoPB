@@ -26,7 +26,7 @@ BMSModule::BMSModule()
 
     // temperatures[0] = 0.0f;
     // temperatures[1] = 0.0f;
-    temperature = modData.rndmTemp();
+    temperature = modData.rndmTemp;
     // lowestTemperature = 200.0f;
     // highestTemperature = -100.0f;
     // lowestModuleVolt = 200.0f;

@@ -128,8 +128,6 @@ void SerialConsole::handleConsoleCmd() {
     if (state == STATE_ROOT_MENU) {
         if (ptrBuffer == 1) { //command is a single ascii character
             handleShortCmd();
-        } else { //if cmd over 1 char then assume (for now) that it is a config line
-            handleConfigCmd();
         }
     }
 }

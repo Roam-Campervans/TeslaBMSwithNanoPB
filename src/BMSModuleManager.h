@@ -1,7 +1,7 @@
 #pragma once
 #include "config.h"
 #include "BMSModule.h"
-#include <due_can.h>
+// #include <due_can.h>
 
 class BMSModuleManager
 {
