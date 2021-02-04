@@ -2,7 +2,7 @@ syntax = "proto2";
 package TeslaBMS;
 
 message Pack {
-  // optional int32 id = 1;
+  optional int32 id = 1;
   optional string packName = 2;  
   required int32 numberOfModules = 3;
   required float currentVoltage = 4;
@@ -20,7 +20,6 @@ message Pack {
     message Cell{
       required int32 cellId = 1;
       required float cellVolt = 2;
-      required string balanceState = 3;
     }
   }
 }
