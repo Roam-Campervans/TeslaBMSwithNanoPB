@@ -27,7 +27,7 @@ float setRndmVolt(float rndmVolt)
 // returns a random temp
 float setRndmTemp(float rndmtemp)
 {
-     return rndmFloat(0, 106);
+     return rndmFloat(0, 24);
 }
 
 
@@ -35,11 +35,11 @@ float setRndmTemp(float rndmtemp)
 int testModuleGen(TestModuleData testMod)
 {
    string holder;
-    while(testMod.numberOfTestModules <= 0 & testMod.numberOfTestModules >= 62)
+    while(testMod.numberOfTestModules <= 0 & testMod.numberOfTestModules >= 4)
     {
         cout << "please enter the number of test modules \n The number of modules can be no more than 62" ;
         cin >> holder;
-        if(stoi(holder) > 0 & stoi(holder) < 63)
+        if(stoi(holder) > 0 & stoi(holder) < 5)
         {
             testMod.numberOfTestModules = stoi(holder);
             break;

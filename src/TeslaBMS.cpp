@@ -103,7 +103,7 @@ void setup()
     
     lastUpdate = 0;
     
-    bms.clearFaults();
+    // bms.clearFaults();
 }
 
 void loop() 

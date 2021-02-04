@@ -9,13 +9,13 @@ public:
     BMSModuleManager();
     void balanceCells();
     void setupBoards();
-    void findBoards();
+    // void findBoards();
     void renumberBoardIDs();
     // void clearFaults();
     // void sleepBoards();
     // void wakeBoards();
     void getAllVoltTemp();
-    void readSetpoints();
+    // void readSetpoints();
     // void setBatteryID();
     float getPackVoltage();
     float getAvgTemperature();
@@ -39,7 +39,7 @@ protected:
     
     // ??????????????? Could these be refactored ????????????????
     // ???????????????  to use Protocol Buffers  ????????????????
-    void sendBatterySummary();
-    void sendModuleSummary(int module);
-    void sendCellDetails(int module, int cell);
+    // void sendBatterySummary();
+    // void sendModuleSummary(int module);
+    // void sendCellDetails(int module, int cell);
 };
