@@ -83,9 +83,9 @@ void BMSModuleManager::getAllVoltTemp()
             // if (modules[x].getLowTemp() < lowestPackTemp) lowestPackTemp = modules[x].getLowTemp();
             // if (modules[x].getHighTemp() > highestPackTemp) highestPackTemp = modules[x].getHighTemp();            
         }
-        printf("\npackvolt is now %f\n",(packVolt/numFoundModules));
-        packVolt = (packVolt/numFoundModules);
     }
+    printf("\npackvolt is now %f\n",(packVolt/numFoundModules));
+    packVolt = (packVolt/numFoundModules);
 
     // if (packVolt > highestPackVolt) highestPackVolt = packVolt;
     // if (packVolt < lowestPackVolt) lowestPackVolt = packVolt;

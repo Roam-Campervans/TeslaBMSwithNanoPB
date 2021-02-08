@@ -59,13 +59,17 @@ void encoder(){
     printf(" %.3f \n", mypack.averagePacktemp);
     mypack.numberOfModules = bms.getNumOfModules();
 
-    if (!(status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack))){
-        // message_length = ostream.bytes_written;
+    //encode
+    status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack);
+    message_length = stream.bytes_written;
 
-        /* Then just check for any errors.. */
+            /* Then just check for any errors.. */
+        if (!status)
+    {
         printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
-    }        
-}
+    }
+}      
+
 
 void decode(){
     /* Allocate space for the decoded message. */
@@ -89,6 +93,7 @@ void decode(){
         // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
         printf("Pack Voltage: %.3f\n", myPack.currentVoltage);
         printf("Average Temp: %.3f\n", myPack.averagePacktemp);
+        printf("Number of modules: %i\n", (int)myPack.numberOfModules);
         printf("********MESSAGE FROM NANOPB!*********\n");
     }
     
@@ -127,9 +132,7 @@ void loop()
         encoder();
         }
 
-        {
         decode();
-        }
     }
 
 }

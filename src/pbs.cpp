@@ -23,7 +23,7 @@
 //         mypack.id = 1;
 //         mypack.averagePacktemp = bms.getAvgTemperature();
 //         mypack.currentVoltage = bms.getPackVoltage();
-//         // mypack.numberOfModules = (int32_t) BMSModuleManager::getNumOfModules;
+//         mypack.numberOfModules = (int32_t) BMSModuleManager::getNumOfModules;
     
 //         //encode
 //         status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack);
