@@ -40,8 +40,17 @@ bool status;
 */
 typedef struct{
     TeslaBMS_Pack_Module modarr[MAX_MODULE_ADDR];
+    int listSize = 0;
 }
 ModuleList;
+
+// add module to list
+void modulelist_add_module(ModuleList * modList, TeslaBMS_Pack_Module module) {
+    if (modList->listSize < MAX_MODULE_ADDR) {
+        modList->modarr[modList->listSize] = module;
+        modList->listSize++;
+    }
+}
 
 void module_array_maker(ModuleList *list){
     for (int i = 1; i <= bms.getNumOfModules(); i++) {
@@ -89,12 +98,15 @@ bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * c
 /* Decode module callback*/
 bool modules_decode(pb_istream_t *istream, const pb_field_t *field, void **arg){
     ModuleList * dest = (ModuleList*)(*arg);
+
+    TeslaBMS_Pack_Module module;
     if(!pb_dec_submessage(istream, field)){
         const char * error = PB_GET_ERROR(istream);
         printf("module_decode error: %s", error);
         return false;
     }
     
+    modulelist_add_module(dest, module);
     return true;
 }
 
