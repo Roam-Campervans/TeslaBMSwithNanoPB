@@ -66,7 +66,6 @@ void module_array_maker(ModuleList *list){
 
         list->modarr[i-1] = myModule;
     }
-    printf("the size of the list of modules is a grand whopping %i",listsize);
 }
 
 
@@ -100,7 +99,7 @@ bool modules_decode(pb_istream_t *istream, const pb_field_t *field, void **arg){
     ModuleList * dest = (ModuleList*)(*arg);
 
     TeslaBMS_Pack_Module module;
-    if(!pb_dec_submessage(istream, field)){
+    if(!pb_decode(istream, TeslaBMS_Pack_Module_fields, &module)){
         const char * error = PB_GET_ERROR(istream);
         printf("module_decode error: %s", error);
         return false;
@@ -154,8 +153,13 @@ void decode(){
     TeslaBMS_Pack myPack = TeslaBMS_Pack_init_zero;
     
     /* Create a stream that reads from the buffer. */
-    pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
     
+    ModuleList modArr;
+    module_array_maker(&modArr);
+    myPack.modules.arg = &modArr;
+    myPack.modules.funcs.decode = modules_decode;
+
+    pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
     /* Now we are ready to decode the message. */
     status = pb_decode(&stream, TeslaBMS_Pack_fields, &myPack);
     
@@ -172,7 +176,11 @@ void decode(){
         printf("Pack Voltage: %.3f\n", myPack.currentVoltage);
         printf("Average Temp: %.3f\n", myPack.averagePacktemp);
         printf("Number of modules: %i\n", (int)myPack.numberOfModules);
-        myPack.modules.funcs.decode= modules_decode;
+        for (size_t i = 0; i < myPack.numberOfModules ; i++)
+        {
+            printf("\n    ************  Module %i  ************\n", modArr.modarr[i].id);
+            printf("       Voltage: %.3f Temperature: %.3f \n" ,modArr.modarr[i].moduleVoltage, modArr.modarr[i].moduleTemp);
+        }        
         printf("********MESSAGE FROM NANOPB!*********\n");
     }
     
