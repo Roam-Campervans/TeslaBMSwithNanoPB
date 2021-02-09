@@ -18,6 +18,7 @@
 #include "tesla_bms.pb.h"
 
 
+
 TestModuleData modData;
 BMSModuleManager bms;
 SerialConsole console;
@@ -37,55 +38,14 @@ bool status;
     uint8_t *buffer, size_t *message_length;
 bool status;
 */
-
-
-
-/* Module encode callback */
-bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * const *arg)
-{    
-    TeslaBMS_Pack * source =(TeslaBMS_Pack*)(*arg);
-    TeslaBMS_Pack_Module mod =TeslaBMS_Pack_Module_init_default;
-
-    for(int i=1; i <= source->numberOfModules; i++){
-        mod.id = i;
-        mod.highestCellVolt= bms.getModules(i).getHighestCellVolt();
-        mod.lowestCellVolt= bms.getModules(i).getLowestCellVolt();
-        mod.moduleTemp=bms.getModules(i).getTemperature();
-        mod.moduleVoltage = bms.getModules(i).getModuleVoltage();
-        printf(" \n Mod %i is at %f \n",(int)mod.id, mod.moduleVoltage);
-        if (!pb_encode_tag_for_field(stream, field))
-        {
-            const char * error = PB_GET_ERROR(stream);
-            printf("encode_modules error: %s", error);
-            return false;
-        }
-    }
-
-    return pb_encode_submessage(stream, &TeslaBMS_Pack_Module_msg, &mod);
+typedef struct{
+    TeslaBMS_Pack_Module modarr[MAX_MODULE_ADDR];
 }
+ModuleList;
 
-
-/* Decode module callback*/
-bool modules_decode(pb_istream_t *istream, const pb_field_t *field, void **arg){
-    TeslaBMS_Pack_Module * dest = (TeslaBMS_Pack_Module*)(*arg);
-    if(!pb_dec_submessage(istream, field)){
-        const char * error = PB_GET_ERROR(istream);
-        printf("module_decode error: %s", error);
-        return false;
-    }
-    
-    return true;
-}
-
-
-
-
-
-// makin mods
-void module_list_add_mod(TeslaBMS_Pack_Module * list){
-    TeslaBMS_Pack_Module moduleArray;
-
-    for (int i = 1; i <= 3; i++) {
+void module_array_maker(ModuleList *list){
+    int listsize = 0;
+    for (int i = 1; i <= bms.getNumOfModules(); i++) {
         TeslaBMS_Pack_Module myModule = TeslaBMS_Pack_Module_init_zero;
 
         BMSModule thisTestModule = bms.getModules(i);
@@ -96,10 +56,53 @@ void module_list_add_mod(TeslaBMS_Pack_Module * list){
         myModule.lowestCellVolt = thisTestModule.getLowestCellVolt();
         myModule.highestCellVolt = thisTestModule.getHighestCellVolt();
 
-        // moduleArray[i - 1] = myModule;
+        list->modarr[i-1] = myModule;
+        listsize++;
     }
-
+    printf("the size of the list of modules is a grand whopping %i",listsize);
 }
+
+
+/* Module encode callback */
+bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * const *arg)
+{    
+    ModuleList *source = (ModuleList*)(*arg);
+
+    for(int i=0; i<bms.getNumOfModules();i++)
+    {
+        printf(" \n Mod %i is at %f \n",(int)source->modarr[i].id, source->modarr[i].moduleVoltage);
+        if (!pb_encode_tag_for_field(stream, field))
+        {
+            const char * error = PB_GET_ERROR(stream);
+            printf("encode_modules error: %s", error);
+            return false;
+        }
+        if (!(stream, TeslaBMS_Pack_Module_fields, &source->modarr[i]))
+        {
+            const char * error = PB_GET_ERROR(stream);
+            printf("SimpleMessage_encode_numbers error: %s", error);
+            return false;
+        }
+    }
+        
+        
+
+    return true;
+}
+
+
+/* Decode module callback*/
+bool modules_decode(pb_istream_t *istream, const pb_field_t *field, void **arg){
+    ModuleList * dest = (ModuleList*)(*arg);
+    if(!pb_dec_submessage(istream, field)){
+        const char * error = PB_GET_ERROR(istream);
+        printf("module_decode error: %s", error);
+        return false;
+    }
+    
+    return true;
+}
+
 
 
     // printf("Pack Voltage: \n");
@@ -119,13 +122,14 @@ void encoder(){
 
 // ?????? I know I have to get the data and pass it in,
 //  but not sure how to pass it from this array ???????
-    BMSModule moduleArray[(bms.getNumOfModules())];
-    for (int i = 0; i < bms.getNumOfModules(); i++)
-    {
-        moduleArray[i] = bms.getModules(i);
-    }
+
+    printf("There will be %i modules for this test",bms.getNumOfModules()); //3
+
+   
+    ModuleList modArr;
+    module_array_maker(&modArr);
     // set the arg to data needed
-    mypack.modules.arg = &moduleArray;
+    mypack.modules.arg = &modArr;
     // encode the modules
     mypack.modules.funcs.encode = modules_encode;
     //encode the pack
@@ -175,7 +179,6 @@ void setup()
     SERIALCONSOLE.begin(115200);
     SERIALCONSOLE.println("Starting up!");
     SERIALCONSOLE.println("Started serial interface to BMS.");
-    printf("There will be %i modules for this test",bms.getNumOfModules());
     
     bms.renumberBoardIDs();
     lastUpdate = 0;
