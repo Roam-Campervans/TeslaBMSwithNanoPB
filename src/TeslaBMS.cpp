@@ -46,12 +46,12 @@ bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * c
     TeslaBMS_Pack * source =(TeslaBMS_Pack*)(*arg);
     TeslaBMS_Pack_Module mod =TeslaBMS_Pack_Module_init_default;
 
-    for(int i=0; i < source->numberOfModules; i++){
-        mod.id = i+1;
-        mod.highestCellVolt= bms.getModules(field->index).getHighestCellVolt();
-        mod.lowestCellVolt= bms.getModules(field->index).getLowestCellVolt();
-        mod.moduleTemp=bms.getModules(field->index).getTemperature();
-        mod.moduleVoltage = bms.getModules(field->index).getModuleVoltage();
+    for(int i=1; i <= source->numberOfModules; i++){
+        mod.id = i;
+        mod.highestCellVolt= bms.getModules(i).getHighestCellVolt();
+        mod.lowestCellVolt= bms.getModules(i).getLowestCellVolt();
+        mod.moduleTemp=bms.getModules(i).getTemperature();
+        mod.moduleVoltage = bms.getModules(i).getModuleVoltage();
         printf(" \n Mod %i is at %f \n",(int)mod.id, mod.moduleVoltage);
         if (!pb_encode_tag_for_field(stream, field))
         {
@@ -67,6 +67,7 @@ bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * c
 
 /* Decode module callback*/
 bool modules_decode(pb_istream_t *istream, const pb_field_t *field, void **arg){
+    TeslaBMS_Pack_Module * dest = (TeslaBMS_Pack_Module*)(*arg);
     if(!pb_dec_submessage(istream, field)){
         const char * error = PB_GET_ERROR(istream);
         printf("module_decode error: %s", error);
@@ -160,15 +161,7 @@ void decode(){
         printf("Pack Voltage: %.3f\n", myPack.currentVoltage);
         printf("Average Temp: %.3f\n", myPack.averagePacktemp);
         printf("Number of modules: %i\n", (int)myPack.numberOfModules);
-        
-        for (int i=0; i <(int)myPack.numberOfModules;i++)
-        {   
-            TeslaBMS_Pack_Module mod = TeslaBMS_Pack_Module_init_default;
-
-            myPack.modules.funcs.decode;
-            printf("\n myPack.modules \n");        
-        }
-        
+        myPack.modules.funcs.decode= modules_decode;
         printf("********MESSAGE FROM NANOPB!*********\n");
     }
     
@@ -182,9 +175,9 @@ void setup()
     SERIALCONSOLE.begin(115200);
     SERIALCONSOLE.println("Starting up!");
     SERIALCONSOLE.println("Started serial interface to BMS.");
+    printf("There will be %i modules for this test",bms.getNumOfModules());
     
     bms.renumberBoardIDs();
-    
     lastUpdate = 0;
     
     // bms.clearFaults();
@@ -206,8 +199,9 @@ void loop()
         {
         encoder();
         }
-
+        {
         decode();
+        }
     }
 
 }
