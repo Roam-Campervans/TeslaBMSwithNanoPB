@@ -50,6 +50,24 @@ void encoder(){
     /* TODO: Set a unique pack id sing Uuid and store in 
     maybe use the current ip address with some salt then hash*/
 
+    // TODO: set up modules
+    TeslaBMS_Pack_Module moduleArray[3];
+
+    for (int i = 1; i <= 3; i++) {
+        TeslaBMS_Pack_Module myModule = TeslaBMS_Pack_Module_init_zero;
+
+        BMSModule thisTestModule = bms.getModules(i);
+
+        myModule.id = i;
+        myModule.moduleVoltage = thisTestModule.getModuleVoltage();
+        myModule.moduleTemp = thisTestModule.getTemperature();
+        myModule.lowestCellVolt = thisTestModule.getLowestCellVolt();
+        myModule.highestCellVolt = thisTestModule.getHighestCellVolt();
+
+        moduleArray[i - 1] = myModule;
+    }
+
+
     // mypack.packName = userinput yet to be defined 
     mypack.averagePacktemp = bms.getAvgTemperature();
     mypack.currentVoltage = bms.getPackVoltage();
