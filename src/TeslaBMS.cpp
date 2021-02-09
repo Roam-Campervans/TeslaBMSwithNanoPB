@@ -44,7 +44,6 @@ typedef struct{
 ModuleList;
 
 void module_array_maker(ModuleList *list){
-    int listsize = 0;
     for (int i = 1; i <= bms.getNumOfModules(); i++) {
         TeslaBMS_Pack_Module myModule = TeslaBMS_Pack_Module_init_zero;
 
@@ -57,7 +56,6 @@ void module_array_maker(ModuleList *list){
         myModule.highestCellVolt = thisTestModule.getHighestCellVolt();
 
         list->modarr[i-1] = myModule;
-        listsize++;
     }
     printf("the size of the list of modules is a grand whopping %i",listsize);
 }
@@ -84,9 +82,6 @@ bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * c
             return false;
         }
     }
-        
-        
-
     return true;
 }
 
