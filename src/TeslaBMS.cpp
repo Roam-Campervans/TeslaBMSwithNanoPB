@@ -37,38 +37,104 @@ bool status;
     uint8_t *buffer, size_t *message_length;
 bool status;
 */
+
+
+
+/* Module encode callback */
+bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * const *arg)
+{    
+    TeslaBMS_Pack * source =(TeslaBMS_Pack*)(*arg);
+    TeslaBMS_Pack_Module mod =TeslaBMS_Pack_Module_init_default;
+
+    for(int i=0; i < source->numberOfModules; i++){
+        mod.id = i+1;
+        mod.highestCellVolt= bms.getModules(field->index).getHighestCellVolt();
+        mod.lowestCellVolt= bms.getModules(field->index).getLowestCellVolt();
+        mod.moduleTemp=bms.getModules(field->index).getTemperature();
+        mod.moduleVoltage = bms.getModules(field->index).getModuleVoltage();
+        printf(" \n Mod %i is at %f \n",(int)mod.id, mod.moduleVoltage);
+        if (!pb_encode_tag_for_field(stream, field))
+        {
+            const char * error = PB_GET_ERROR(stream);
+            printf("encode_modules error: %s", error);
+            return false;
+        }
+    }
+
+    return pb_encode_submessage(stream, &TeslaBMS_Pack_Module_msg, &mod);
+}
+
+
+/* Decode module callback*/
+bool modules_decode(pb_istream_t *istream, const pb_field_t *field, void **arg){
+    if(!pb_dec_submessage(istream, field)){
+        const char * error = PB_GET_ERROR(istream);
+        printf("module_decode error: %s", error);
+        return false;
+    }
+    
+    return true;
+}
+
+
+
+
+
+// makin mods
+void module_list_add_mod(TeslaBMS_Pack_Module * list){
+    TeslaBMS_Pack_Module moduleArray;
+
+    for (int i = 1; i <= 3; i++) {
+        TeslaBMS_Pack_Module myModule = TeslaBMS_Pack_Module_init_zero;
+
+        BMSModule thisTestModule = bms.getModules(i);
+
+        myModule.id = i;
+        myModule.moduleVoltage = thisTestModule.getModuleVoltage();
+        myModule.moduleTemp = thisTestModule.getTemperature();
+        myModule.lowestCellVolt = thisTestModule.getLowestCellVolt();
+        myModule.highestCellVolt = thisTestModule.getHighestCellVolt();
+
+        // moduleArray[i - 1] = myModule;
+    }
+
+}
+
+
+    // printf("Pack Voltage: \n");
+    // printf(" %.3f \n", mypack.currentVoltage);
+    // printf("Average Temp: \n");
+    // printf(" %.3f \n", mypack.averagePacktemp);
+
 void encoder(){
     // Setup pack message
     TeslaBMS_Pack mypack = TeslaBMS_Pack_init_zero;
-    // Setup module message
-    // TeslaBMS_Pack_Module myModule = TeslaBMS_Pack_Module_init_zero;
-    // Setup cell message
-    // TeslaBMS_Pack_Module_Cell myCells = TeslaBMS_Pack_Module_Cell_init_zero;
     // stream to write buffer
     pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    
-    /* TODO: Set a unique pack id sing Uuid and store in 
-    maybe use the current ip address with some salt then hash*/
-
-    // mypack.packName = userinput yet to be defined 
+    // set deffinitions     
     mypack.averagePacktemp = bms.getAvgTemperature();
     mypack.currentVoltage = bms.getPackVoltage();
-    printf("Pack Voltage: \n");
-    printf(" %.3f \n", mypack.currentVoltage);
-    printf("Average Temp: \n");
-    printf(" %.3f \n", mypack.averagePacktemp);
     mypack.numberOfModules = bms.getNumOfModules();
 
-    //encode
+// ?????? I know I have to get the data and pass it in,
+//  but not sure how to pass it from this array ???????
+    BMSModule moduleArray[(bms.getNumOfModules())];
+    for (int i = 0; i < bms.getNumOfModules(); i++)
+    {
+        moduleArray[i] = bms.getModules(i);
+    }
+    // set the arg to data needed
+    mypack.modules.arg = &moduleArray;
+    // encode the modules
+    mypack.modules.funcs.encode = modules_encode;
+    //encode the pack
     status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack);
     message_length = stream.bytes_written;
-
-            /* Then just check for any errors.. */
-        if (!status)
-    {
-        printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
-    }
+        
+        if (!status) printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
 }      
+
+
 
 
 void decode(){
@@ -94,6 +160,15 @@ void decode(){
         printf("Pack Voltage: %.3f\n", myPack.currentVoltage);
         printf("Average Temp: %.3f\n", myPack.averagePacktemp);
         printf("Number of modules: %i\n", (int)myPack.numberOfModules);
+        
+        for (int i=0; i <(int)myPack.numberOfModules;i++)
+        {   
+            TeslaBMS_Pack_Module mod = TeslaBMS_Pack_Module_init_default;
+
+            myPack.modules.funcs.decode;
+            printf("\n myPack.modules \n");        
+        }
+        
         printf("********MESSAGE FROM NANOPB!*********\n");
     }
     
