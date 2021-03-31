@@ -1,7 +1,4 @@
-#if defined (__arm__) && defined (__SAM3X8E__)
 
-#include <chip.h>
-#endif
 #include <Arduino.h>
 #include "Logger.h"
 #include "SerialConsole.h"
@@ -83,9 +80,14 @@ bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * c
             printf("encode_modules error: %s", error);
             return false;
         }
-        if (!(stream, TeslaBMS_Pack_Module_fields, &source->modarr[i]))
+        if (stream, TeslaBMS_Pack_Module_fields, &source->modarr[i])
+        {
+            printf("\n %i \n",stream-> bytes_written);
+        }
+        else
         {
             const char * error = PB_GET_ERROR(stream);
+            
             printf("SimpleMessage_encode_numbers error: %s", error);
             return false;
         }
@@ -126,9 +128,6 @@ void encoder(){
     mypack.currentVoltage = bms.getPackVoltage();
     mypack.numberOfModules = bms.getNumOfModules();
 
-// ?????? I know I have to get the data and pass it in,
-//  but not sure how to pass it from this array ???????
-
     printf("There will be %i modules for this test",bms.getNumOfModules()); //3
 
    
@@ -139,10 +138,17 @@ void encoder(){
     // encode the modules
     mypack.modules.funcs.encode = modules_encode;
     //encode the pack
+
     status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack);
     message_length = stream.bytes_written;
+    printf("Encoded size is %d\n", stream.bytes_written);
         
         if (!status) printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
+
+    for (uint8_t i = 0; i < stream.bytes_written; i++) {
+    Serial.print(buffer[i],HEX);
+    }
+    printf("\n");
 }      
 
 
