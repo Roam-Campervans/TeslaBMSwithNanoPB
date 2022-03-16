@@ -21,11 +21,6 @@ BMSModuleManager bms;
 SerialConsole console;
 uint32_t lastUpdate;
 
-// nanopb stuff
-uint8_t buffer [128];
-size_t message_length;
-bool status;
-
 /*Encodes NanoPB message
     Good recource for help on encoding repeated messages
     https://stackoverflow.com/questions/45979984/creating-callbacks-and-structs-for-repeated-field-in-a-protobuf-message-in-nanop 
@@ -40,6 +35,10 @@ typedef struct{
     int listSize = 0;
 }
 ModuleList;
+
+// nanopb stuff
+uint8_t buffer [sizeof(TeslaBMS_Pack) + sizeof(TeslaBMS_Pack_Module) * 3];
+bool status;
 
 // add module to list
 void modulelist_add_module(ModuleList * modList, TeslaBMS_Pack_Module module) {
@@ -118,11 +117,11 @@ bool modules_decode(pb_istream_t *istream, const pb_field_t *field, void **arg){
     // printf("Average Temp: \n");
     // printf(" %.3f \n", mypack.averagePacktemp);
 
-void encoder(){
+size_t encoder() {
     // Setup pack message
     TeslaBMS_Pack mypack = TeslaBMS_Pack_init_zero;
     // stream to write buffer
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(TeslaBMS_Pack));
     // set deffinitions     
     mypack.averagePacktemp = bms.getAvgTemperature();
     mypack.currentVoltage = bms.getPackVoltage();
@@ -133,28 +132,27 @@ void encoder(){
    
     ModuleList modArr;
     module_array_maker(&modArr);
+    
     // set the arg to data needed
     mypack.modules.arg = &modArr;
+    
     // encode the modules
     mypack.modules.funcs.encode = modules_encode;
+    
     //encode the pack
-
     status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack);
-    message_length = stream.bytes_written;
-    printf("Encoded size is %d\n", stream.bytes_written);
         
-        if (!status) printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
-
-    for (uint8_t i = 0; i < stream.bytes_written; i++) {
-    Serial.print(buffer[i],HEX);
+    if (!status) {
+        printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
     }
-    printf("\n");
-}      
+    printf("Encoded %d bytes\n", stream.bytes_written);
+    return stream.bytes_written;
+}
 
 
 
 
-void decode(){
+void decode(size_t message_length){
     /* Allocate space for the decoded message. */
     TeslaBMS_Pack myPack = TeslaBMS_Pack_init_zero;
     
@@ -164,7 +162,7 @@ void decode(){
     module_array_maker(&modArr);
     myPack.modules.arg = &modArr;
     myPack.modules.funcs.decode = modules_decode;
-
+    
     pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
     /* Now we are ready to decode the message. */
     status = pb_decode(&stream, TeslaBMS_Pack_fields, &myPack);
@@ -220,12 +218,8 @@ void loop()
         // bms.balanceCells();
         bms.getAllVoltTemp();
 
-        {
-        encoder();
-        }
-        {
-        decode();
-        }
+        size_t msg_length = encoder();
+        decode(msg_length);
     }
 
 }
