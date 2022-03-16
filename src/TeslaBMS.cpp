@@ -93,18 +93,17 @@ bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * c
 bool modules_decode(pb_istream_t *istream, const pb_field_t *field, void **arg) {
     ModuleList * dest = (ModuleList*)(*arg);
 
-    while(istream->bytes_left) {
-        TeslaBMS_Pack_Module module;
-        bool status = pb_decode(istream, TeslaBMS_Pack_Module_fields, &module);
-        if(!status){
-            const char * error = PB_GET_ERROR(istream);
-            printf("module_decode error: %s\n", error);
-            return false;
-        }
-        
-        printf("module decoded\n");
-        modulelist_add_module(dest, module);
-    }    
+    TeslaBMS_Pack_Module module;
+    bool status = pb_decode(istream, TeslaBMS_Pack_Module_fields, &module);
+    if(!status){
+        const char * error = PB_GET_ERROR(istream);
+        printf("module_decode error: %s\n", error);
+        return false;
+    }
+
+    printf("module decoded\n");
+    modulelist_add_module(dest, module);
+
     return true;
 }
 
