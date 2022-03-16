@@ -21,11 +21,6 @@ BMSModuleManager bms;
 SerialConsole console;
 uint32_t lastUpdate;
 
-// nanopb stuff
-uint8_t buffer [128];
-size_t message_length;
-bool status;
-
 /*Encodes NanoPB message
     Good recource for help on encoding repeated messages
     https://stackoverflow.com/questions/45979984/creating-callbacks-and-structs-for-repeated-field-in-a-protobuf-message-in-nanop 
@@ -67,27 +62,26 @@ void module_array_maker(ModuleList *list){
 
 
 /* Module encode callback */
-bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * const *arg)
-{    
+bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * const *arg) {
     ModuleList *source = (ModuleList*)(*arg);
 
     for(int i=0; i<bms.getNumOfModules();i++)
     {
-        printf(" \n Mod %i is at %f \n",(int)source->modarr[i].id, source->modarr[i].moduleVoltage);
+        printf("\nEncoding TeslaPack_Module[%i].moduleVoltage %f \n",(int)source->modarr[i].id, source->modarr[i].moduleVoltage);
         if (!pb_encode_tag_for_field(stream, field))
         {
             const char * error = PB_GET_ERROR(stream);
             printf("encode_modules error: %s", error);
             return false;
         }
-        if (stream, TeslaBMS_Pack_Module_fields, &source->modarr[i])
-        {
-            printf("\n %i \n",stream-> bytes_written);
+        
+        bool status = pb_encode_submessage(stream, TeslaBMS_Pack_Module_fields, &source->modarr[i]);
+        if (status) {
+            printf("\n...%i bytes written so far...\n", stream->bytes_written);
         }
         else
         {
             const char * error = PB_GET_ERROR(stream);
-            
             printf("SimpleMessage_encode_numbers error: %s", error);
             return false;
         }
@@ -95,104 +89,77 @@ bool modules_encode(pb_ostream_t *stream, const pb_field_iter_t *field, void * c
     return true;
 }
 
-
 /* Decode module callback*/
-bool modules_decode(pb_istream_t *istream, const pb_field_t *field, void **arg){
+bool modules_decode(pb_istream_t *istream, const pb_field_t *field, void **arg) {
     ModuleList * dest = (ModuleList*)(*arg);
 
     TeslaBMS_Pack_Module module;
-    if(!pb_decode(istream, TeslaBMS_Pack_Module_fields, &module)){
+    bool status = pb_decode(istream, TeslaBMS_Pack_Module_fields, &module);
+    if(!status){
         const char * error = PB_GET_ERROR(istream);
-        printf("module_decode error: %s", error);
+        printf("module_decode error: %s\n", error);
         return false;
     }
-    
+
+    printf("module decoded\n");
     modulelist_add_module(dest, module);
+
     return true;
 }
 
-
-
-    // printf("Pack Voltage: \n");
-    // printf(" %.3f \n", mypack.currentVoltage);
-    // printf("Average Temp: \n");
-    // printf(" %.3f \n", mypack.averagePacktemp);
-
-void encoder(){
+size_t encoder(pb_byte_t *buffer, size_t length) {
     // Setup pack message
     TeslaBMS_Pack mypack = TeslaBMS_Pack_init_zero;
     // stream to write buffer
-    pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    // set deffinitions     
+    pb_ostream_t stream = pb_ostream_from_buffer(buffer, length);
+    // set definitions     
     mypack.averagePacktemp = bms.getAvgTemperature();
     mypack.currentVoltage = bms.getPackVoltage();
     mypack.numberOfModules = bms.getNumOfModules();
 
-    printf("There will be %i modules for this test",bms.getNumOfModules()); //3
-
-   
     ModuleList modArr;
     module_array_maker(&modArr);
-    // set the arg to data needed
     mypack.modules.arg = &modArr;
-    // encode the modules
     mypack.modules.funcs.encode = modules_encode;
+    
     //encode the pack
-
-    status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack);
-    message_length = stream.bytes_written;
-    printf("Encoded size is %d\n", stream.bytes_written);
-        
-        if (!status) printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
-
-    for (uint8_t i = 0; i < stream.bytes_written; i++) {
-    Serial.print(buffer[i],HEX);
+    bool status = pb_encode(&stream, TeslaBMS_Pack_fields, &mypack);
+    if (!status) {
+        printf("Encoding failed: %s\n", PB_GET_ERROR(&stream));
     }
-    printf("\n");
-}      
+    printf("Encoded %d bytes\n", stream.bytes_written);
+    return stream.bytes_written;
+}
 
-
-
-
-void decode(){
+void decode(pb_byte_t *buffer, size_t message_length){
     /* Allocate space for the decoded message. */
     TeslaBMS_Pack myPack = TeslaBMS_Pack_init_zero;
-    
-    /* Create a stream that reads from the buffer. */
-    
+        
     ModuleList modArr;
     module_array_maker(&modArr);
     myPack.modules.arg = &modArr;
     myPack.modules.funcs.decode = modules_decode;
-
-    pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
-    /* Now we are ready to decode the message. */
-    status = pb_decode(&stream, TeslaBMS_Pack_fields, &myPack);
     
-    /* Check for errors... */
+    pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
+    bool status = pb_decode(&stream, TeslaBMS_Pack_fields, &myPack);
     if (!status)
     {
         printf("Decoding failed: %s\n", PB_GET_ERROR(&stream));
+        return;
     }
-    else
+    /* Print the data contained in the message. */
+    printf("\n********MESSAGE FROM NANOPB!*********\n");
+    // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
+    printf("Pack Voltage: %.3f\n", myPack.currentVoltage);
+    printf("Average Temp: %.3f\n", myPack.averagePacktemp);
+    printf("Number of modules: %i\n", (int)myPack.numberOfModules);
+    for (size_t i = 0; i < myPack.numberOfModules ; i++)
     {
-        /* Print the data contained in the message. */
-        printf("\n********MESSAGE FROM NANOPB!*********\n");
-        // printf("Number Of Modules in Pack: ", myPack.numberOfModules);
-        printf("Pack Voltage: %.3f\n", myPack.currentVoltage);
-        printf("Average Temp: %.3f\n", myPack.averagePacktemp);
-        printf("Number of modules: %i\n", (int)myPack.numberOfModules);
-        for (size_t i = 0; i < myPack.numberOfModules ; i++)
-        {
-            printf("\n    ************  Module %i  ************\n", modArr.modarr[i].id);
-            printf("       Voltage: %.3f Temperature: %.3f \n" ,modArr.modarr[i].moduleVoltage, modArr.modarr[i].moduleTemp);
-        }        
-        printf("********MESSAGE FROM NANOPB!*********\n");
-    }
-    
-    
+        printf("\n    ************  Module %i  ************\n", modArr.modarr[i].id);
+        printf("       Voltage: %.3f Temperature: %.3f \n" ,modArr.modarr[i].moduleVoltage, modArr.modarr[i].moduleTemp);
+    }        
+    printf("********MESSAGE FROM NANOPB!*********\n");
 }
-
 
 void setup() 
 {
@@ -209,23 +176,16 @@ void setup()
 
 void loop() 
 {
-    // CAN_FRAME incoming;
-
     console.loop();
 
-    if (millis() > (lastUpdate + 1000))
+    if (millis() > (lastUpdate + 2000))
     {    
-    
         lastUpdate = millis();
         // bms.balanceCells();
         bms.getAllVoltTemp();
 
-        {
-        encoder();
-        }
-        {
-        decode();
-        }
+        pb_byte_t buffer[128];
+        size_t msg_length = encoder(buffer, sizeof(buffer));
+        decode(buffer, msg_length);
     }
-
 }
